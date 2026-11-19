@@ -4,6 +4,7 @@ import {G, tus, bas, kilitIste, kilitBirak} from "../girdi.js";
 import {SILAHLAR} from "../veri/silahlar.js";
 import {ses, borazan} from "../ses.js";
 import {AYAR} from "../kayit.js";
+import {HIZ} from "./savas.js";
 
 const R = Math.random;
 const aciFark = (a, b) => { let d = b - a; while (d > Math.PI) d -= Math.PI * 2; while (d < -Math.PI) d += Math.PI * 2; return d; };
@@ -59,7 +60,8 @@ export class Oyuncu {
   }
   vmGoster() {
     const a = this.asker; if (!a) return;
-    const tip = a.model === "kilic" || a.model === "mizrak" ? "kilic" : a.model === "tabanca" ? "tabanca" : "tufek";
+    const sec = this.silahSecim || "ana";
+    const tip = sec === "tabanca" ? "tabanca" : sec === "yakin" ? (a.yakinW === "sungu" ? "tufek" : "kilic") : (a.anaYok ? "kilic" : "tufek");
     this.vmTip = tip;
     for (const [k, o] of Object.entries(this.vmSilahlar)) o.visible = k === tip;
     this.vmKol.visible = tip !== "kilic";
@@ -76,6 +78,7 @@ export class Oyuncu {
     this.asker = a; a.oyuncu = true; a.silahW = m.silah; s.oyuncuAsker = a; this.mod = "asker"; this.motor.birinciSahis = true;
     this.yaw = a.yon; this.pitch = -0.02; this.diz = false;
     this.bombalar = m.tanim.ikinci === "el_bombasi" ? 3 : 0;
+    this.silahSecim = a.anaYok ? (a.tabanca > 0 ? "tabanca" : "yakin") : "ana"; this.tabancaDolum = 0;
     this.viewmodel.visible = true; this.vmGoster(); s.komutan.oyuncu = false;
     this.kam.fov = 70; this.kam.updateProjectionMatrix();
     this.s.mesaj(`${m.ad} içinde bir asker olarak savaşıyorsun.`, "bilgi");
@@ -103,7 +106,11 @@ export class Oyuncu {
     const hs = 0.0022 * AYAR.hassasiyet * (this.nisan ? 0.45 : 1) * (this.durbun ? 0.3 : 1);
     if (this.mod !== "taktik") { this.yaw -= G.fareDX * hs; this.pitch = Math.max(-1.3, Math.min(1.2, this.pitch - G.fareDY * hs)); }
     // sayı tuşları: manga seçimi
-    for (let i = 1; i <= 9; i++) if (bas("Digit" + i)) this.sec(i - 1);
+    if (this.mod !== "asker") for (let i = 1; i <= 9; i++) if (bas("Digit" + i)) this.sec(i - 1);
+    if (this.mod !== "asker" && !this.ganimet) {
+      const m = this.seciliManga(), d = bas("KeyZ") ? "hat" : bas("KeyC") ? "kare" : bas("KeyK") ? "kol" : bas("KeyJ") ? "daginik" : null;
+      if (d && m) { s.emirVer(m, {tur: "dizilis", d}); ses("tik"); }
+    }
     if (this.oluT > 0) {
       this.oluT -= dt;
       this.kam.position.y += dt * 0.6;
@@ -143,10 +150,13 @@ export class Oyuncu {
   }
   askerKontrol(dt) {
     const s = this.s, a = this.asker; if (!a || a.olu) return;
-    const m = a.manga, w = a.silahW || m.silah, yakin = SILAHLAR[m.tanim.yakin];
+    const m = a.manga, w = a.silahW || m.silah, yakin = SILAHLAR[a.yakinW || m.tanim.yakin];
     if (bas("KeyC") || bas("ControlLeft")) this.diz = !this.diz;
+    // silah değiştir: 1 ana silah, 2 tabanca, 3 yakın dövüş
+    const yeni = bas("Digit1") && !a.anaYok ? "ana" : bas("Digit2") && a.tabanca !== undefined && (a.tabanca > 0 || a.rol === "subay" || a.atli) ? "tabanca" : bas("Digit3") && yakin ? "yakin" : null;
+    if (yeni && yeni !== this.silahSecim) { this.silahSecim = yeni; this.vmGoster(); ses("tik"); s.mesaj(yeni === "ana" ? w.ad : yeni === "tabanca" ? `Tabanca (${a.tabanca} fişek)` : yakin.ad, "bilgi"); }
     const kosuyor = tus("ShiftLeft") && !this.nisan && !this.diz;
-    let hiz = a.atli ? (kosuyor ? m.tanim.kosu : m.tanim.hiz * 1.6) : (kosuyor ? 4.2 : this.diz ? 1.1 : 1.9);
+    let hiz = (a.atli ? (kosuyor ? m.tanim.kosu : m.tanim.hiz * 1.6) : (kosuyor ? 4.2 : this.diz ? 1.1 : 1.9)) * HIZ * (a.hafifYara ? 0.75 : 1);
     const hareketli = this.hareket(dt, a, hiz);
     if (hareketli && this.diz && kosuyor) this.diz = false;
     a.yon = this.yaw; a.poz = a.atli ? "ata" : this.diz ? "diz" : hareketli ? (kosuyor ? "kos" : "yuru") : "nisan";
@@ -175,9 +185,12 @@ export class Oyuncu {
     vm.position.set(vx, vy, vz); vm.rotation.set(rx, 0, rz); vm.visible = !durbun;
     // ateş
     a.tutuk = Math.max(0, (a.tutuk || 0) - dt);
-    if (this.vmTip === "kilic") { if (G.solBas && this.kilicT <= 0) this.yakinSaldir(a, yakin || SILAHLAR.kilic); }
+    this.tabancaDolum = Math.max(0, (this.tabancaDolum || 0) - dt);
+    if (this.silahSecim === "yakin") { if (G.solBas && this.kilicT <= 0) this.yakinSaldir(a, yakin || SILAHLAR.kilic); }
+    else if (this.silahSecim === "tabanca") { if (G.solBas) this.tabancaAtes(a); }
     else if (G.sol && (w.tur !== "makineli" ? G.solBas : true)) this.ateset(a, w);
-    if (bas("KeyR") && a.sarjor < w.sarjor && a.dolum <= 0) { a.dolum = w.dolum; a.sarjor = 0; }
+    if (bas("KeyR") && this.silahSecim === "tabanca" && this.tabancaDolum <= 0) { this.tabancaDolum = 5; a.tabanca = 6; s.mesaj("Tabanca dolduruluyor…", "bilgi"); }
+    else if (bas("KeyR") && a.sarjor < w.sarjor && a.dolum <= 0) { a.dolum = w.dolum; a.sarjor = 0; }
     if (bas("KeyQ") && yakin) this.yakinSaldir(a, yakin);
     if (bas("KeyG") && this.bombalar > 0) { const h = this.ileriNokta(30); this.bombalar--; s.bombaAt(a, h.x, h.z, SILAHLAR.el_bombasi); s.mesaj(`El bombası! (${this.bombalar} kaldı)`, "bilgi"); }
     this.ortakTuslar(a);
@@ -193,6 +206,13 @@ export class Oyuncu {
     if (bas("KeyT")) { const p = this.ileriNokta(1400); s.topcuAtesi(p.x, p.z); }
     if (bas("KeyF")) { const p = this.ileriNokta(160); s.fisekAt(p.x, p.z); }
     if (bas("KeyB")) { borazan("hucum"); for (const m of this.bizMangalar()) if (!m.bozuk && m.cx !== undefined && Math.hypot(m.cx - a.x, m.cz - a.z) < 40) m.moral = Math.min(m.moralMax, m.moral + 6); s.mesaj("Borazan çaldı: yakındaki mangaların morali yükseldi.", "iyi"); this.borazanT = 30; }
+  }
+  tabancaAtes(a) {
+    if (this.tabancaDolum > 0) return;
+    if (!(a.tabanca > 0)) { this.tabancaDolum = 5; a.tabanca = 6; this.s.mesaj("Tabanca boş; dolduruluyor…", "uyari"); return; }
+    const sd = a.sarjor, dd = a.dolum, mm = a.mermi; a.sarjor = 1; a.dolum = 0; a.mermi = 99; this.sonAtis = -9;
+    this.ateset(a, SILAHLAR.tabanca);
+    a.sarjor = sd; a.dolum = dd; a.mermi = mm; a.tabanca--;
   }
   ateset(a, w) {
     const s = this.s;
@@ -240,7 +260,7 @@ export class Oyuncu {
   komutanKontrol(dt) {
     const s = this.s, a = s.komutan; if (!a || a.olu) return;
     const kos = tus("ShiftLeft");
-    const hareketli = this.hareket(dt, a, kos ? 4.6 : 2);
+    const hareketli = this.hareket(dt, a, (kos ? 4.6 : 2) * HIZ);
     if (hareketli) a.yon += aciFark(a.yon, this.yaw) * Math.min(1, dt * 10);
     a.poz = hareketli ? (kos ? "kos" : "yuru") : (this.borazanT > 0 ? "selam" : "dur");
     this.borazanT = Math.max(0, (this.borazanT || 0) - dt);

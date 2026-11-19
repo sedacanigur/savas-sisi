@@ -283,10 +283,13 @@ export function araziKur(sahne, {tip = "tepe", iklim, seed = 1, seg = 128, agacS
   const cimRenk = iklim.cim;
   if (cimRenk && cimSayisi > 0) {
     const n2 = tip === "vaha" ? cimSayisi * 0.2 : cimSayisi;
-    const geo = birlestir([new THREE.PlaneGeometry(0.8, 0.45).translate(0, 0.22, 0), new THREE.PlaneGeometry(0.8, 0.45).translate(0, 0.22, 0).rotateY(Math.PI / 2)]);
-    geo.setAttribute("uv", new THREE.Float32BufferAttribute([0, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 0], 2));
+    const duz = a => { const g = new THREE.PlaneGeometry(0.8, 0.45).translate(0, 0.22, 0).rotateY(a).toNonIndexed(); return g; };
+    const parca = [0, Math.PI / 2, Math.PI, Math.PI * 1.5].map(duz);
+    const geo = new THREE.BufferGeometry();
+    const P = [], U = []; for (const g of parca) { P.push(...g.attributes.position.array); U.push(...g.attributes.uv.array); }
+    geo.setAttribute("position", new THREE.Float32BufferAttribute(P, 3)); geo.setAttribute("uv", new THREE.Float32BufferAttribute(U, 2)); geo.setAttribute("normal", new THREE.Float32BufferAttribute(new Array(P.length).fill(0), 3));
     const nr = geo.attributes.normal; for (let i = 0; i < nr.count; i++) nr.setXYZ(i, 0, 1, 0); // zemin gibi aydınlansın
-    const cm = new THREE.MeshLambertMaterial({map: cimDoku(), alphaTest: 0.45, side: THREE.DoubleSide});
+    const cm = new THREE.MeshLambertMaterial({map: cimDoku(), alphaTest: 0.45});
     cm.onBeforeCompile = sh => { sh.uniforms.zaman = sisU.zaman; sh.vertexShader = sh.vertexShader.replace("#include <common>", "#include <common>\nuniform float zaman;").replace("#include <begin_vertex>", `#include <begin_vertex>
       vec4 wp = instanceMatrix * vec4(0.0,0.0,0.0,1.0); float sal = sin(zaman * 1.7 + wp.x * 0.3 + wp.z * 0.2) * 0.12 * position.y; transformed.x += sal; transformed.z += sal * 0.6;`); };
     const cim = new THREE.InstancedMesh(geo, cm, Math.round(n2)); const o = new THREE.Object3D(), c = new THREE.Color(); let k = 0;

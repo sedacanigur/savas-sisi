@@ -91,6 +91,7 @@ function poz(p, a) {
     case "diz_doldur": { const c = Math.sin(t * 6); P.kalca = 0.52; P.egim = 0.15; P.silah = [0.1, 0.05, 0.32, -0.6, 0, 0.1]; P.solO = [-0.8, 0.25]; P.solD = -0.9; P.sO = [-0.9 + c * 0.2, -0.2]; P.sD = -1.2 - c * 0.3;
       P.solK = [-1.45, -0.08]; P.solDz = 1.5; P.sK = [0.25, 0.1]; P.sDz = 1.6; P.bas = 0.3; break; }
     case "olu": { const k = Math.min(1, a.olum || 0); const yon = a.yon2 > 0.5 ? 1 : -1; P.kok = yon * k * 1.52; P.egim = -yon * k * 0.2; P.sO = [k * -2.6 * (yon > 0 ? 0.3 : 1), -0.5 * k]; P.solO = [k * -2.2, 0.6 * k]; P.sK = [-0.3 * k, 0.1]; P.solK = [0.2 * k, -0.15]; P.silah = null; break; }
+    case "yarali": { P.kok = (a.yon2 > 0.5 ? 1 : -1) * 1.5; const c = Math.sin(t * 1.3 + a.yon2 * 9); P.sO = [-1.4 - Math.max(0, c) * 1.2, -0.4]; P.sD = -0.6; P.solO = [-0.3, 0.6]; P.solD = -1.4; P.sK = [-0.6, 0.1]; P.sDz = 0.9; P.solK = [-0.1, -0.1]; P.bas = -0.3 + c * 0.1; P.silah = null; break; }
     case "ata": P.kalca = 1.68; P.egim = 0.05 + Math.sin(t * 9) * 0.03 * Math.min(1, hiz / 4); P.sK = [-1.25, 0.32]; P.solK = [-1.25, -0.32]; P.sDz = 1.3; P.solDz = 1.3; P.solO = [-0.6, 0.2]; P.solD = -0.9; P.sO = [-0.4, -0.15]; P.sD = -0.8; P.silah = "el"; P.elRx = 0.6; break;
     case "ata_hucum": P.kalca = 1.68; P.egim = 0.35; P.sK = [-1.25, 0.32]; P.solK = [-1.25, -0.32]; P.sDz = 1.3; P.solDz = 1.3; P.solO = [-0.6, 0.2]; P.solD = -0.9; P.sO = [-1.35, -0.1]; P.sD = -0.15; P.silah = "el"; P.elRx = 0.15; break;
     case "ata_nisan": P.kalca = 1.68; P.egim = 0.08; P.sK = [-1.25, 0.32]; P.solK = [-1.25, -0.32]; P.sDz = 1.3; P.solDz = 1.3; P.silah = [0.13, 0.46, 0.08, -(a.nisan || 0), 0, 0]; P.sO = [-1.1, -0.35]; P.sD = -0.9; P.solO = [-1.45, 0.4]; P.solD = -0.25; break;
@@ -103,6 +104,7 @@ function poz(p, a) {
     case "at": { const c = Math.sin(t * 7); P.egim = 0.25; P.sO = [-2.4 - c * 0.4, -0.2]; P.sD = -0.3; P.solO = [-0.3, 0.2]; P.solD = -0.4; P.silah = null; break; }
     case "kaz": { const c = Math.sin(t * 4); P.egim = 0.5 + c * 0.15; P.kalca = 0.85; P.sO = [-1 - c * 0.4, -0.1]; P.solO = [-1 - c * 0.4, 0.1]; P.sD = -0.4; P.solD = -0.4; P.silah = null; break; }
   }
+  if (a.hafifYara && (p === "yuru" || p === "kos")) P.kokY += Math.sin(t * 7) * 0.07;
   return P;
 }
 
@@ -141,6 +143,7 @@ export class Kalabalik {
   }
   _asker(a) {
     const p = poz(a.poz, a);
+    const lod = a.uzk > 48400 ? 2 : a.uzk > 8100 ? 1 : 0;
     const ten = a.tenC || TEN, deri = DERI;
     let ceket = a.ceketC, pan = a.pantolonC;
     if (a.solgun) { ceket = SG1.copy(ceket).lerp(GRI, a.solgun); pan = SG2.copy(pan).lerp(GRI, a.solgun); }
@@ -148,11 +151,11 @@ export class Kalabalik {
     if (p.kok) { kok.multiply(_t.makeTranslation(0, 0.05, 0)).multiply(_r.makeRotationX(p.kok)); }
     if (p.kokY) kok.multiply(_r.makeRotationZ(p.kokY));
     eklem(kok, pel, 0, p.kalca, 0, 0, 0, 0);
-    this._yaz(this.P.kalca, pel, pan);
+    if (lod < 2) this._yaz(this.P.kalca, pel, pan);
     eklem(pel, gov, 0, 0.08, 0, p.egim, p.basY * 0.3, 0);
     this._yaz(this.P.govde, gov, ceket);
-    if (a.canta !== false) this._yaz(this.P.canta, gov, deri);
-    if (a.kemerC) this._yaz(this.P.kemer, gov, a.kemerC);
+    if (a.canta !== false && lod < 2) this._yaz(this.P.canta, gov, deri);
+    if (a.kemerC && lod === 0) this._yaz(this.P.kemer, gov, a.kemerC);
     eklem(gov, j1, 0, 0.62, 0, p.bas, p.basY, 0);
     this._yaz(this.P.bas, j1, ten);
     const sapka = this.S[a.sapka]; if (sapka) { eklem(j1, j2, 0, 0.23, 0, 0, 0, 0); this._yaz(sapka, j2, a.sapkaC || DERI); }
@@ -163,7 +166,7 @@ export class Kalabalik {
       this._yaz(this.P.ustKol, j1, ceket);
       eklem(j1, j2, 0, -0.3, 0, D, 0, 0);
       this._yaz(this.P.altKol, j2, ceket);
-      eklem(j2, j1, 0, -0.26, 0, 0, 0, 0); this._yaz(this.P.el, j1, ten);
+      if (lod === 0) { eklem(j2, j1, 0, -0.26, 0, 0, 0, 0); this._yaz(this.P.el, j1, ten); }
       if (s > 0) el.copy(j2).multiply(_t.makeTranslation(0, -0.3, 0.02));
     }
     // bacaklar
@@ -173,7 +176,7 @@ export class Kalabalik {
       this._yaz(this.P.uyluk, j1, pan);
       eklem(j1, j2, 0, -0.46, 0, Dz, 0, 0);
       this._yaz(this.P.baldir, j2, pan);
-      this._yaz(this.P.cizme, j2, a.cizmeC || deri);
+      if (lod < 2) this._yaz(this.P.cizme, j2, a.cizmeC || deri);
     }
     // silah
     const w = this.W[a.model];

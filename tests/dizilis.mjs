@@ -1,0 +1,20 @@
+// Formasyon görüntüsü: hat, kare, kol, dağınık
+import {chromium} from "/opt/npm-tools/node_modules/playwright/index.mjs";
+const b = await chromium.launch({executablePath: "/usr/bin/google-chrome", args: ["--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"]});
+const p = await b.newPage({viewport: {width: 1280, height: 720}});
+p.on("pageerror", e => console.log("ERR", e.message, e.stack.split("\n").slice(0, 3).join(" | ")));
+const bekle = ms => p.waitForTimeout(ms);
+await p.goto("http://localhost:8765/index.html"); await bekle(1200);
+await p.evaluate(() => localStorage.setItem("savassisi-ayar-v1", JSON.stringify({grafik: "orta", kamera: "komutan", soru: {tarih: true, lgs: false, yanlis: false}})));
+await p.reload(); await bekle(1500);
+await p.click("text=Serbest Savunma"); await bekle(300);
+await p.selectOption(".modal select.harita", "koy");
+await p.click(".modal .basla"); await bekle(4000);
+await p.click(".ileri"); await bekle(1200); await p.click(".basla"); await bekle(800);
+await p.evaluate(() => { const s = window.__savas; const L = s.mangalar.filter(m => m.taraf === 0 && !m.komutan && !m.top && !m.mg && !m.atli);
+  ["hat", "kare", "kol", "daginik"].forEach((d, i) => { if (L[i]) { s.yerlestir(L[i], -60 + i * 40, 60, Math.PI); s.dizilisDegistir(L[i], d); s.formasyon(L[i], true); } });
+  const y = s.A.yuzey(-0, 60); window.__kam = [0, y + 45, 105, 0, y, 58]; });
+await bekle(2500); await p.screenshot({path: "/tmp/dz_0.png"});
+await p.evaluate(() => { const s = window.__savas; const y = s.A.yuzey(-20, 60); window.__kam = [-12, y + 7, 72, -20, y + 1, 60]; });
+await bekle(1500); await p.screenshot({path: "/tmp/dz_1.png"});
+await b.close();

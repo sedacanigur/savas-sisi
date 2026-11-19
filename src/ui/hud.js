@@ -2,6 +2,7 @@
 import {esc, el} from "./arayuz.js";
 import {bas} from "../girdi.js";
 import {MangaEtiket} from "./etiket.js";
+import {DIZILIS} from "../savas/savas.js";
 
 export class Hud {
   constructor(motor, savas, oyuncu) {
@@ -65,7 +66,7 @@ export class Hud {
       const canli = m.askerler.filter(a => !a.olu).length;
       c.classList.toggle("sec", m === sec); c.classList.toggle("bozuk", m.bozuk); c.classList.toggle("yok", !canli);
       const emir = m.bozuk ? "BOZUK" : {tut: "mevzide", git: "ilerliyor", hucum: "HÜCUM", geri: "çekiliyor", kac: "kaçıyor"}[m.emir.tur] || "";
-      c.querySelector(".d").textContent = `${canli} kişi · ${emir}`;
+      c.querySelector(".d").textContent = `${canli} kişi · ${(m.top || m.mg) ? emir : (DIZILIS[m.dizilis] || DIZILIS.hat).ad.toLowerCase() + " · " + emir}`;
       const ics = c.querySelectorAll(".cubuk i");
       ics[0].style.width = (canli / Math.max(1, m.baslangicBoy) * 100) + "%"; ics[1].style.width = Math.max(0, m.moral) + "%";
     }
@@ -84,8 +85,8 @@ export class Hud {
     // yardım
     const y = this.q(".yardim"); y.hidden = !(this.yardimAcik && this.yardimT > 0) || s.bitti;
     if (!y.hidden) y.innerHTML = o.mod === "asker"
-      ? `<b>Asker</b> · <span class="kbd">WASD</span> yürü · <span class="kbd">Shift</span> koş · <span class="kbd">C</span> diz çök · <span class="kbd">Sol tık</span> ateş · <span class="kbd">Sağ tık</span> nişan · <span class="kbd">R</span> doldur · <span class="kbd">Q</span> süngü · <span class="kbd">G</span> bomba · <span class="kbd">T</span> topçu · <span class="kbd">F</span> fişek · <span class="kbd">B</span> borazan · <span class="kbd">V</span> komutana geç · <span class="kbd">Tab</span> taktik harita · <span class="kbd">F1</span> yardım`
-      : `<b>Komutan</b> · <span class="kbd">1–9</span> manga seç · <span class="kbd">Sağ tık</span> oraya git (<span class="kbd">Shift</span> koşarak) · <span class="kbd">G</span> hücum / top hedefi · <span class="kbd">H</span> mevzini tut · <span class="kbd">X</span> geri çekil · <span class="kbd">T</span> topçu ateşi · <span class="kbd">F</span> fişek · <span class="kbd">B</span> borazan · <span class="kbd">Sol tık</span> tabanca · <span class="kbd">V</span> askere geç · <span class="kbd">Tab</span> taktik harita · <span class="kbd">F1</span> yardım`;
+      ? `<b>Asker</b> · <span class="kbd">WASD</span> yürü · <span class="kbd">Shift</span> koş · <span class="kbd">C</span> diz çök · <span class="kbd">Sol tık</span> ateş · <span class="kbd">Sağ tık</span> nişan · <span class="kbd">R</span> doldur · <span class="kbd">1</span>/<span class="kbd">2</span>/<span class="kbd">3</span> tüfek/tabanca/kılıç · <span class="kbd">Q</span> süngü · <span class="kbd">G</span> bomba · <span class="kbd">T</span> topçu · <span class="kbd">F</span> fişek · <span class="kbd">B</span> borazan · <span class="kbd">V</span> komutana geç · <span class="kbd">Tab</span> taktik harita · <span class="kbd">F1</span> yardım`
+      : `<b>Komutan</b> · <span class="kbd">1–9</span> manga seç · <span class="kbd">Sağ tık</span> oraya git (<span class="kbd">Shift</span> koşarak) · <span class="kbd">G</span> hücum / top hedefi · <span class="kbd">H</span> mevzini tut · <span class="kbd">X</span> geri çekil · düzen: <span class="kbd">Z</span> hat <span class="kbd">C</span> kare <span class="kbd">K</span> kol <span class="kbd">J</span> dağınık · <span class="kbd">T</span> topçu ateşi · <span class="kbd">F</span> fişek · <span class="kbd">B</span> borazan · <span class="kbd">Sol tık</span> tabanca · <span class="kbd">V</span> askere geç · <span class="kbd">Tab</span> taktik harita · <span class="kbd">F1</span> yardım`;
     const tk = this.q(".tik"); tk.textContent = o.mod === "taktik" ? "" : (o.mod === "komutan" && sec ? sec.ad : "");
     this.miniHarita();
   }

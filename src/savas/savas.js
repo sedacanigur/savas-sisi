@@ -19,6 +19,16 @@ const uzak = (a, b) => Math.sqrt(d2(a, b));
 const aci = (dx, dz) => Math.atan2(dx, dz);
 const aciFark = (a, b) => { let d = b - a; while (d > Math.PI) d -= Math.PI * 2; while (d < -Math.PI) d += Math.PI * 2; return d; };
 const d0 = s => donem(s.yil);
+export const HIZ = 1.25, CAN_CARPAN = 1.6;
+// Formasyonlar: hiz · ates (isabet) · suvSav (süvarinin vurma şansı) · karsi (süngü karşı darbesi) · topcu (top hasarı) · hedef (bu dizilişe ateş edenin isabeti) · yakin (yakın dövüş hasarı)
+export const DIZILIS = {
+  hat:     {ad: "Hat", hiz: 1, ates: 1, suvSav: 1, karsi: 0.18, topcu: 1, hedef: 1, yakin: 1, aciklama: "Bütün tüfekler ateş eder. Dengeli."},
+  kare:    {ad: "Kare", hiz: 0.35, ates: 0.6, suvSav: 0.25, karsi: 0.55, topcu: 1.6, hedef: 1.15, yakin: 1, aciklama: "Süvariye karşı kale. Toplara ise açık hedef; çok yavaş."},
+  kol:     {ad: "Kol", hiz: 1.3, ates: 0.4, suvSav: 1.2, karsi: 0.22, topcu: 1.4, hedef: 1.15, yakin: 1.25, aciklama: "Hızlı yürüyüş ve süngü hücumu. Ateş gücü düşük."},
+  daginik: {ad: "Dağınık", hiz: 1.1, ates: 0.85, suvSav: 1.8, karsi: 0.05, topcu: 0.45, hedef: 0.75, yakin: 0.8, aciklama: "Avcı perdesi: toplardan ve tüfekten az etkilenir, süvariye savunmasız."},
+  kama:    {ad: "Kama", hiz: 1.1, ates: 0.7, suvSav: 1, karsi: 0.1, topcu: 1.2, hedef: 1.1, yakin: 1.2, aciklama: "Süvari hücum düzeni: ilk çarpışma daha güçlü."},
+};
+const diz = m => DIZILIS[m.dizilis] || DIZILIS.hat;
 const MODEL = {tufek: "tufek", karabina: "karabina", keskin: "keskin", tabanca: "tabanca", hm: "hm", alev: "alev"};
 let ID = 1;
 
@@ -79,7 +89,7 @@ export class Savas {
       moral: 0, moralMax: 100, bozuk: false, bakim: durum.bakim ?? null, cephane: durum.cephane ?? 1, ekmek: durum.ekmek ?? true,
       tahkimat: false, sonKayip: -99, sonHucumSok: -99, atli: !!(tanim.ozel && tanim.ozel.atli), sinif: tanim.sinif, silah: w,
       hedefManga: null, gorunur: false, gorulduT: -99, sonGorulen: null, sancakli: !!(tanim.ozel && tanim.ozel.sancak), secili: false, komutan: !!op.komutan,
-      kayipSayi: 0, baslangicBoy: boy, isi: 0, asiri: 0};
+      kayipSayi: 0, baslangicBoy: boy, isi: 0, asiri: 0, dizilis: "hat", dizT: 0, otoKare: true, oncekiDiz: null, reformT: 0};
     // moral: ekmek ve hava
     const ekmekMax = m.ekmek ? 100 : (this.cfg.konserve ? 75 : 60);
     m.moralMax = ekmekMax; m.moral = clamp((m.ekmek ? 82 : 52) * (tanim.moral || 1) + this.hava.moral + (durum.moralEk || 0), 25, 100);
@@ -103,16 +113,23 @@ export class Savas {
     const tenler = ["#d9a77f", "#c99572", "#e1b48e", "#b98563", "#a6714f"];
     const adet = aracTur ? 1 : boy;
     for (let i = 0; i < adet; i++) {
-      const a = {id: ID++, taraf, manga: m, x: x + (R() - 0.5) * 4, z: z + (R() - 0.5) * 4, y: 0, yon, vx: 0, vz: 0, can: tanim.can, maxCan: tanim.can,
+      const can0 = Math.round(tanim.can * (aracTur ? 1 : CAN_CARPAN));
+      const a = {id: ID++, taraf, manga: m, x: x + (R() - 0.5) * 4, z: z + (R() - 0.5) * 4, y: 0, yon, vx: 0, vz: 0, can: can0, maxCan: can0,
         durum: "dur", poz: "dur", t: R() * 10, hiz: 0, nisan: 0, olum: 0, yon2: R(), olu: false, olumT: 0, dolum: R() * 2, sarjor: w.sarjor,
         mermi: Math.round((tanim.sinif === "topcu" ? 999 : 60) * m.cephane), tutuk: 0, nisanT: 0, hedef: null, hedefT: R(), yakinT: 0, atisT: -99, kazT: 0,
         slot: i, model: this.modelOf(tanim, w, i), canta: tanim.sinif === "piyade" && !(tanim.ozel && (tanim.ozel.komutan || tanim.ozel.sancak) && i === 0),
         ceketC, pantolonC: panC, sapka, sapkaC, kemerC: tanim.ozel?.komutan ? null : kemerC, cizmeC, tenC: new THREE.Color(tenler[(R() * tenler.length) | 0]), at: null, atli: false, bombaT: 15 + R() * 20, ilkDarbe: true, sapan: 0,
         yarali: false, oyuncu: false};
-      if (tanim.ozel && tanim.ozel.sancak && i === 0) a.model = "sancak";
+      // silahlar: ana (uzak) + yakın (süngü/kılıç/mızrak) + tabanca
+      a.yakinW = tanim.yakin || null; a.tabanca = (tanim.sinif === "suvari" || tanim.tabanca) ? 6 : 0; a.anaYok = w.tur === "tabanca";
+      // bölük kadrosu: subay, sancaktar, borazan
+      const kadro = !op.komutan && !aracTur && (tanim.sinif === "piyade" || tanim.sinif === "suvari");
+      if (kadro && boy >= 10 && i === 0) { a.rol = "subay"; a.model = "kilic"; a.yakinW = "kilic"; a.tabanca = 8; a.anaYok = true; a.canta = false; a.kemerC = null; a.ceketC = ceketC.clone().multiplyScalar(0.8); }
+      if (kadro && tanim.sinif === "piyade" && ((boy >= 24 && i === 1) || (tanim.ozel && tanim.ozel.sancak && i === 1))) { a.rol = "sancak"; a.model = "sancak"; a.anaYok = true; a.yakinW = "kilic"; a.canta = false; }
+      if (kadro && tanim.sinif === "piyade" && boy >= 30 && i === 2) { a.rol = "borazan"; a.model = null; a.anaYok = true; a.canta = false; }
       if (m.atli || (tanim.ozel && tanim.ozel.motor && tanim.sinif === "suvari")) {
         a.atli = true; a.at = {tur: tanim.ozel.deve ? "deve" : tanim.ozel.motor ? "motor" : "at", renk: tanim.ozel.deve ? "#c2a372" : AT_RENKLER[(R() * AT_RENKLER.length) | 0], hiz: 0, t: R() * 5, olum: 0};
-        a.can += 40; a.maxCan = a.can;
+        a.can += 60; a.maxCan = a.can;
       }
       if (aracTur) this.aracKur(a, aracTur, taraf);
       if (m.top && i > 0) a.model = null;
@@ -135,7 +152,7 @@ export class Savas {
   modelOf(tanim, w, i) {
     if (tanim.ozel && tanim.ozel.komutan) return "kilic";
     if (tanim.yakin === "mizrak" && tanim.sinif === "suvari") return "mizrak";
-    if (tanim.sinif === "suvari" && tanim.yakin === "kilic" && !(tanim.ozel && tanim.ozel.inip_savasir)) return i % 3 === 0 ? "karabina" : "kilic";
+    if (tanim.sinif === "suvari" && !(tanim.ozel && tanim.ozel.inip_savasir)) return w.tur === "tufek" ? "karabina" : "kilic";
     return MODEL[w.model] || (w.tur === "tabanca" ? "tabanca" : "tufek");
   }
   aracKur(a, tur, taraf) {
@@ -146,24 +163,50 @@ export class Savas {
     a.zirh = tur === "tank" ? 2 : tur === "zirhli" ? 1 : 0;
     a.ucusAci = R() * 6; a.ucusR = 140 + R() * 60;
   }
-  // manga dizilişi: askerlerin yuva noktaları
+  // manga dizilişi: askerlerin yuva noktaları (hat, kare, kol, dağınık, kama)
   formasyon(m, isinla) {
-    const n = m.askerler.length; if (!n) return;
-    const sira = m.atli ? Math.min(6, n) : m.sinif === "topcu" || m.sinif === "makineli" ? n : Math.min(n, Math.max(4, Math.ceil(n / 2)));
-    const ara = m.atli ? 2.6 : m.sinif === "topcu" ? 1.6 : (m.taraf === 1 && m.ai === "ilerle" ? 1.4 : 1.6);
+    const canli = m.askerler.filter(a => !a.olu); if (!canli.length) return;
     const sx = Math.cos(m.yon), sz = -Math.sin(m.yon), ix = Math.sin(m.yon), iz = Math.cos(m.yon);
-    let k = 0;
-    for (const a of m.askerler) {
-      if (a.olu) continue;
-      let ox, oz;
-      if (m.top) { const yer = [[0, -1.8], [-1.3, -0.4], [1.3, -0.4], [-0.8, -2.8], [0.8, -2.8]][k % 5]; ox = yer[0]; oz = yer[1]; }
-      else if (m.mg) { const yer = [[0, -0.9], [-0.9, -0.6], [0.9, -1.4]][k % 3]; ox = yer[0]; oz = yer[1]; }
-      else { const c = k % sira, s = Math.floor(k / sira); ox = (c - (sira - 1) / 2) * ara + (s % 2) * 0.4; oz = -s * (m.atli ? 3.2 : 1.6); }
-      a.yx = m.x + sx * ox + ix * oz; a.yz = m.z + sz * ox + iz * oz;
-      if (isinla) { a.x = a.yx; a.z = a.yz; a.y = this.A.yuzey(a.x, a.z); a.yon = m.yon; }
-      k++;
+    const koy = (a, ox, oz, ya = 0) => {
+      a.yx = m.x + sx * ox + ix * oz; a.yz = m.z + sz * ox + iz * oz; a.dizYon = m.yon + ya;
+      if (isinla) { a.x = a.yx; a.z = a.yz; a.y = this.A.yuzey(a.x, a.z); a.yon = a.dizYon; }
+    };
+    if (m.top) { canli.forEach((a, k) => { const y = [[0, -1.8], [-1.3, -0.4], [1.3, -0.4], [-0.8, -2.8], [0.8, -2.8], [0, -4]][k % 6]; koy(a, y[0], y[1]); }); return; }
+    if (m.mg) { canli.forEach((a, k) => { const y = [[0, -0.9], [-0.9, -0.6], [0.9, -1.4], [0, -2.4]][k % 4]; koy(a, y[0], y[1]); }); return; }
+    const erler = canli.filter(a => !a.rol), E = erler.length, d = m.dizilis || "hat";
+    const yer = [];
+    const jit = i => ((Math.sin(i * 12.9898) * 43758.5453) % 1);
+    if (d === "kare" && !m.atli) {
+      const k = Math.max(1, Math.ceil(E / 8)), ara = 1.0, L = k * ara / 2 + 0.7;
+      for (let r = 0; r < 2; r++) for (let sd = 0; sd < 4; sd++) for (let j = 0; j < k; j++) {
+        const t = (j - (k - 1) / 2) * ara, dd = L - r * 1.1;
+        yer.push(sd === 0 ? [t, dd, 0] : sd === 1 ? [dd, -t, -Math.PI / 2] : sd === 2 ? [-t, -dd, Math.PI] : [-dd, t, Math.PI / 2]);
+      }
+    } else if (d === "kol") {
+      const w = m.atli ? 4 : Math.min(10, Math.max(4, Math.round(Math.sqrt(E * 0.8))));
+      for (let i = 0; i < E; i++) yer.push([((i % w) - (w - 1) / 2) * (m.atli ? 2.2 : 1.05), -Math.floor(i / w) * (m.atli ? 3 : 1.25), 0]);
+    } else if (d === "daginik") {
+      const per = Math.ceil(E / 2);
+      for (let i = 0; i < E; i++) { const c = i % per, r = Math.floor(i / per); yer.push([(c - (per - 1) / 2) * (m.atli ? 5 : 3.4) + (r ? 1.7 : 0) + jit(i) * 0.8, -r * 4 + jit(i + 7) * 1.2, 0]); }
+    } else if (d === "kama" && m.atli) {
+      let i = 0; for (let r = 0; i < E; r++) for (let c = 0; c < 2 * r + 1 && i < E; c++, i++) yer.push([(c - r) * 2.3, -r * 2.8, 0]);
+    } else {
+      const ranks = m.atli ? 2 : (E >= 40 ? 3 : E >= 6 ? 2 : 1), per = Math.ceil(E / ranks), ara = m.atli ? 2.3 : 1.0;
+      for (let i = 0; i < E; i++) { const c = i % per, r = Math.floor(i / per); yer.push([(c - (per - 1) / 2) * ara + (r % 2) * 0.45, -r * (m.atli ? 3.1 : 1.25), 0]); }
     }
+    erler.forEach((a, i) => { const y = yer[i] || [0, -6 - i * 0.5, 0]; koy(a, y[0], y[1], y[2]); });
+    const kare = d === "kare" && !m.atli;
+    for (const a of canli) if (a.rol === "subay") koy(a, kare ? 0 : 0, kare ? 0.6 : (m.atli ? 3.5 : 2.2));
+    else if (a.rol === "sancak") koy(a, kare ? 0.8 : 0.6, kare ? -0.6 : (d === "kol" ? 1.6 : -3.8));
+    else if (a.rol === "borazan") koy(a, kare ? -0.8 : 1.6, kare ? -0.4 : (m.atli ? 3 : 1.6));
   }
+  dizilisDegistir(m, d) {
+    if (!m || m.dizilis === d || m.top || m.mg || m.tanim.sinif === "arac" || m.tanim.sinif === "hava" || m.tanim.sinif === "destek") return false;
+    if (d === "kare" && m.atli) d = "kama";
+    if (d === "kama" && !m.atli) return false;
+    m.dizilis = d; m.dizT = this.zaman; this.formasyon(m, false); return true;
+  }
+  rolBul(m, r) { return m.askerler.find(a => a.rol === r && !a.olu); }
 
   // Aşama 1/2: yerleştirme, durum ve tahkimat
   yerlestir(m, x, z, yon = m.yon) {
@@ -278,8 +321,8 @@ export class Savas {
     for (const a of this.askerler) {
       if (a.arac || a === gizle || a.durum === "gizli") continue;
       if (a.taraf === 1 && !a.gorunur && !a.olu && !this.bitti && !window.__hepsi) continue;
-      if (a.olu && a.olumT > 30) continue;
-      a.solgun = a.olu ? Math.min(0.6, a.olumT / 30) : 0;
+      if (a.olu && a.olumT > (a.yarali ? 150 : 30)) continue;
+      a.solgun = a.olu && !a.yarali ? Math.min(0.6, a.olumT / 30) : 0;
       a.uzk = (a.x - kam.x) ** 2 + (a.z - kam.z) ** 2;
       L.push(a);
     }
@@ -304,7 +347,8 @@ export class Savas {
       for (const a of canli) if (a.arac && (a.aracTur === "balon" || a.aracTur === "ucak" || a.aracTur === "zeplin")) r = m.tanim.gorus * Math.max(0.6, this.hava.gorus);
       // ortalama konum + birkaç asker
       L.push({x: m.x, z: m.z, r});
-      for (let i = 0; i < canli.length; i += 3) L.push({x: canli[i].x, z: canli[i].z, r: r * 0.85});
+      const adim = Math.max(3, Math.ceil(canli.length / 6));
+      for (let i = 0; i < canli.length; i += adim) L.push({x: canli[i].x, z: canli[i].z, r: r * 0.85});
     }
     if (taraf === 0 && this.oyuncuAsker && !this.oyuncuAsker.olu) L.push({x: this.oyuncuAsker.x, z: this.oyuncuAsker.z, r: 190 * this.gorusCarpan + 30});
     return L;
@@ -377,6 +421,14 @@ export class Savas {
       m.hedefManga = en; m.hedefMes = Math.sqrt(ed);
     }
     if (m.taraf === 1) this.dusmanAI(m, dt); else this.bizimAI(m, dt);
+    // ölenlerin yerini doldur: saflar sıklaşır
+    m.reformT -= dt; if (m.reformT <= 0) { m.reformT = 2.5; if (!m.git) this.formasyon(m, false); }
+    // süvari tehdidine karşı kendiliğinden kare (1900 öncesi talimli piyade)
+    if (!m.atli && !m.top && !m.mg && m.sinif === "piyade" && !m.bozuk && !m.komutan && (m.taraf === 1 || m.otoKare)) {
+      const tehdit = this.mangalar.some(o => o.taraf !== m.taraf && o.atli && !o.bozuk && !o.yokOldu && o.cx !== undefined && (o.cx - m.cx) ** 2 + (o.cz - m.cz) ** 2 < 95 * 95 && this.canlilar(o).length > 3);
+      if (tehdit && m.dizilis !== "kare" && this.yil < 1900 && this.zaman - m.dizT > 3 && !(m.emir.tur === "hucum")) { m.oncekiDiz = m.dizilis; this.dizilisDegistir(m, "kare"); if (m.taraf === 0) this.mesaj(`${m.ad}: süvari! KARE OL!`, "uyari"); }
+      else if (!tehdit && m.dizilis === "kare" && m.oncekiDiz && this.zaman - m.dizT > 10) { this.dizilisDegistir(m, m.oncekiDiz); m.oncekiDiz = null; }
+    }
     // hareket: manga noktası hedefe yürür
     if (m.git) {
       const dx = m.git.x - m.x, dz = m.git.z - m.z, d = Math.hypot(dx, dz);
@@ -408,7 +460,7 @@ export class Savas {
     if (m.mg) this.mgGuncelle(m, dt, canli);
   }
   mangaHiz(m) {
-    const t = m.tanim; let h = m.kos ? t.kosu : t.hiz;
+    const t = m.tanim; let h = (m.kos ? t.kosu : t.hiz) * HIZ * (m.emir && m.emir.tur === "hucum" ? 1 : diz(m).hiz);
     let k = this.hava.hiz; if (this.hava.camur && (m.atli || m.top)) k *= 0.8;
     if (this.iklim.sicaklik === 2 && m.atli && !t.ozel?.deve) k *= 0.85;
     if (m.taraf === 1 && m.ai === "ilerle") h *= 1.0;
@@ -424,6 +476,7 @@ export class Savas {
     if (emir.tur === "geri") { m.git = {...m.baslangic}; m.kos = true; }
     if (emir.tur === "hucum") { m.kos = true; m.hucumT = 0; borazan("hucum"); }
     if (emir.tur === "tut") { m.x = m.cx ?? m.x; m.z = m.cz ?? m.z; this.formasyon(m, false); }
+    if (emir.tur === "dizilis") { m.emir = {tur: "tut"}; m.oncekiDiz = null; m.otoKare = emir.d !== "hat" ? m.otoKare : true; if (this.dizilisDegistir(m, emir.d)) this.mesaj(`${m.ad}: ${DIZILIS[m.dizilis].ad} düzeni!`, "bilgi"); }
   }
   bizimAI(m, dt) {
     if (m.komutan) return;
@@ -438,7 +491,7 @@ export class Savas {
       if (!m.hedefManga || m.hucumT > 40) { m.emir = {tur: "tut"}; m.x = m.cx; m.z = m.cz; m.kos = false; this.formasyon(m, false); }
     }
     // süvari kendiliğinden: yakına gelen düşmana (topçu ya da bozuk) hücum
-    if (m.atli && e.tur === "tut" && m.hedefManga && m.hedefMes < 90 && !m.tanim.ozel?.inip_savasir && (m.hedefManga.top || m.hedefManga.bozuk || m.hedefManga.mg || m.hedefMes < 45)) {
+    if (m.atli && e.tur === "tut" && m.hedefManga && m.hedefManga.dizilis !== "kare" && m.hedefMes < 90 && !m.tanim.ozel?.inip_savasir && (m.hedefManga.top || m.hedefManga.bozuk || m.hedefManga.mg || m.hedefMes < 45)) {
       m.emir = {tur: "hucum"}; m.kos = true; m.hucumT = 0; this.mesaj(`${m.ad} hücuma kalktı!`, "iyi"); ses("at", 40);
     }
     // ejder: hareket ederken atlı, dururken iner
@@ -467,11 +520,11 @@ export class Savas {
     if (sinif === "suvari") {
       if (m.ai === "hucum") {
         m.kos = true;
-        if (!H || m.aiT > 26 || (m.kayipSayi / m.baslangicBoy > 0.5)) { m.ai = "toparlan"; m.aiT = 0; m.kos = true; m.git = {x: m.cx + (R() - 0.5) * 60, z: m.cz - 90}; }
+        if (!H || m.aiT > 26 || (m.kayipSayi / m.baslangicBoy > 0.5) || (H.dizilis === "kare" && m.aiT > 9)) { m.ai = "toparlan"; this.dizilisDegistir(m, "hat"); m.aiT = 0; m.kos = true; m.git = {x: m.cx + (R() - 0.5) * 60, z: m.cz - 90}; }
         return;
       }
       if (m.ai === "toparlan") { if (!m.git || m.aiT > 14) { m.ai = "ilerle"; m.aiT = 0; } return; }
-      if (H && mes < 150 && !m.tanim.ozel?.inip_savasir) { m.ai = "hucum"; m.aiT = 0; m.kos = true; ses("at", 60); this.mesaj("Düşman süvarisi hücuma kalktı!", "uyari"); return; }
+      if (H && mes < 150 && !m.tanim.ozel?.inip_savasir && !(H.dizilis === "kare" && R() < 0.7)) { m.ai = "hucum"; m.aiT = 0; m.kos = true; this.dizilisDegistir(m, "kama"); ses("at", 60); this.mesaj("Düşman süvarisi hücuma kalktı!", "uyari"); return; }
       if (m.tanim.ozel?.inip_savasir && H && mes < menzil * 0.8) { m.ai = "ates"; m.aiT = 0; m.git = null; m.askerler.forEach(a => { if (!a.arac) a.atli = false; }); return; }
       if (m.ai === "ates") { if (!H || mes > menzil || m.aiT > 30) { m.ai = "ilerle"; m.askerler.forEach(a => { if (a.at) a.atli = true; }); } return; }
       sonraki(); m.kos = mes < 260; return;
@@ -492,8 +545,9 @@ export class Savas {
       if (!H || mes > menzil * 1.05 || m.aiT > sure) { m.ai = "ilerle"; m.aiT = 0; }
       return;
     }
-    if (H && mes < menzil * (m.silah.sarjor > 1 ? 0.92 : 0.88) && m.aiT > 4) { m.ai = "ates"; m.aiT = 0; m.git = null; m.x = m.cx; m.z = m.cz; m.yon = aci(H.cx - m.cx, H.cz - m.cz); this.formasyon(m, false); return; }
+    if (H && mes < menzil * (m.silah.sarjor > 1 ? 0.92 : 0.88) && m.aiT > 4) { m.ai = "ates"; m.aiT = 0; m.git = null; m.x = m.cx; m.z = m.cz; m.yon = aci(H.cx - m.cx, H.cz - m.cz); if (m.dizilis !== "kare") m.dizilis = this.yil >= 1904 ? "daginik" : "hat"; this.formasyon(m, false); return; }
     sonraki(); m.kos = false;
+    if (m.dizilis !== "kare") { const ist = (!H || mes > 230) ? "kol" : "hat"; if (m.dizilis !== ist && this.zaman - m.dizT > 4) this.dizilisDegistir(m, ist); }
     if (m.rota && m.rotaI >= m.rota.length - 1 && !m.git) m.git = {x: this.A.hedef.x + (R() - 0.5) * 20, z: this.A.hedef.z + (R() - 0.5) * 20};
   }
   ucusGuncelle(a, dt, taraf) {
@@ -507,7 +561,7 @@ export class Savas {
   // ---------------- asker ----------------
   askerGuncelle(a, dt) {
     a.t += dt;
-    if (a.olu) { a.olumT += dt; a.olum = Math.min(1, a.olumT * 1.8); if (a.at) a.at.olum = Math.min(1, a.olumT * 1.2); a.y = this.A.yuzey(a.x, a.z); a.poz = "olu"; if (a.arac) this.aracCiz(a, dt); return; }
+    if (a.olu) { a.olumT += dt; a.olum = Math.min(1, a.olumT * 1.8); if (a.at) a.at.olum = Math.min(1, a.olumT * 1.2); a.y = this.A.yuzey(a.x, a.z); a.poz = a.yarali && !a.arac ? "yarali" : "olu"; if (a.arac) this.aracCiz(a, dt); return; }
     if (a.durum === "sandal" || a.durum === "gizli") return;
     if (a.oyuncu) { this.atisGuncelle(a, dt, true); return; }
     const m = a.manga;
@@ -527,7 +581,7 @@ export class Savas {
       }
     }
     const h = a.hedef && !a.hedef.olu ? a.hedef : null;
-    const w = m.silah, yakinW = SILAHLAR[m.tanim.yakin] || null;
+    const w = m.silah, yakinW = a.yakinW ? SILAHLAR[a.yakinW] : null;
     const hucum = (m.taraf === 0 && m.emir.tur === "hucum") || (m.taraf === 1 && m.ai === "hucum");
     // hedef nokta
     let tx = a.yx ?? a.x, tz = a.yz ?? a.z;
@@ -537,15 +591,17 @@ export class Savas {
     let hz = 0;
     const kos = m.kos || hucum || d > 8;
     if (d > (hucum ? 1.2 : 0.5) && !(m.ariza)) {
-      hz = (kos ? m.tanim.kosu : m.tanim.hiz) * this.hava.hiz * (this.A.suda(a.x, a.z) ? 0.5 : 1);
+      hz = (kos ? m.tanim.kosu : m.tanim.hiz) * HIZ * this.hava.hiz * (this.A.suda(a.x, a.z) ? 0.5 : 1) * (a.hafifYara ? 0.72 : 1) * (hucum ? 1 : Math.max(0.6, diz(m).hiz));
       if (d > 3 && !hucum) hz *= 1.15; // yuvaya yetiş
       if (a.atli && !kos) hz = Math.max(hz, 2.5);
       const st = Math.min(d, hz * dt);
       const nx = a.x + dx / d * st, nz = a.z + dz / d * st;
       if (!this.A.derinSu(nx, nz) || this.A.derinSu(a.x, a.z)) { a.x = nx; a.z = nz; }
       a.yon += aciFark(a.yon, aci(dx, dz)) * Math.min(1, dt * 8);
-    }
-    a.hiz = hz; a.y = this.A.yuzey(a.x, a.z) - (a.at && a.atli && a.at.tur === "motor" ? 0.75 : 0) + (a.at && a.atli && a.at.tur === "deve" ? 0.35 : 0);
+    } else if (!h && a.dizYon !== undefined) a.yon += aciFark(a.yon, a.dizYon) * Math.min(1, dt * 3);
+    a.hiz = hz;
+    // süvari silah görünümü: hücumda kılıç ya da mızrak
+    if (a.atli && !a.rol) a.model = hucum ? (a.yakinW === "mizrak" ? "mizrak" : "kilic") : (w.tur === "tufek" ? "karabina" : "kilic"); a.y = this.A.yuzey(a.x, a.z) - (a.at && a.atli && a.at.tur === "motor" ? 0.75 : 0) + (a.at && a.atli && a.at.tur === "deve" ? 0.35 : 0);
     if (a.at) { a.at.hiz = a.atli ? hz : 0; a.at.t += dt; if (a.atli && hz > 4 && R() < dt * 6 && this.iklim.sicaklik !== 0) this.E.tozKaldir(a.x, a.y, a.z, this.iklim.sicaklik === 2 ? 1.6 : 1); }
     // yakın dövüş
     a.yakinT = Math.max(0, a.yakinT - dt);
@@ -555,15 +611,22 @@ export class Savas {
       if (hd < ym && (hucum || hd < 2.2)) {
         a.yon = aci(h.x - a.x, h.z - a.z);
         if (a.yakinT <= 0) {
-          a.yakinT = yakinW.aralik * (0.8 + R() * 0.4);
-          let p = yakinW.isabet * (a.atli && a.hiz > 4 ? 1.3 : 1) * (h.atli && !a.atli ? 0.8 : 1);
+          a.yakinT = yakinW.aralik * (0.8 + R() * 0.4) * (a.atli ? 1.3 : 1);
+          const hm = h.manga, hd2 = diz(hm), sarj = a.atli && a.hiz > 4;
+          let p = yakinW.isabet * (sarj ? 1.1 : 1) * (h.atli && !a.atli ? 0.8 : 1) * (a.hafifYara ? 0.8 : 1);
+          if (a.atli && !h.atli && !h.arac) p *= hd2.suvSav;
           if (R() < p) {
-            let dmg = yakinW.hasar * (a.ilkDarbe && yakinW.ilkDarbe ? yakinW.ilkDarbe : 1) * (a.atli && a.hiz > 4 ? 1.4 : 1) * (m.tanim.yakinHasar || 1);
+            const dmg = yakinW.hasar * (a.ilkDarbe && yakinW.ilkDarbe ? yakinW.ilkDarbe : 1) * (sarj ? 1.15 : 1) * (m.tanim.yakinHasar || 1) * diz(m).yakin;
             this.hasar(h, dmg * (0.8 + R() * 0.4), a, "yakin");
-            if (a.atli && a.hiz > 4 && this.zaman - h.manga.sonHucumSok > 8) { h.manga.moral -= 12; h.manga.sonHucumSok = this.zaman; }
+            if (sarj && !h.atli && hm.dizilis !== "kare" && this.zaman - hm.sonHucumSok > 8) { hm.moral -= 8; hm.sonHucumSok = this.zaman; }
             this.E.isabet(h.x, h.y + 1.1, h.z, "asker");
           }
-          a.ilkDarbe = false;
+          // süngü ve mızrak duvarı: süvariye karşı darbe
+          if (a.atli && !h.atli && !h.olu && (h.yakinW === "sungu" || h.yakinW === "uzun_mizrak" || h.yakinW === "mizrak")) {
+            const k = hd2.karsi + (h.yakinW !== "sungu" ? 0.3 : 0);
+            if (R() < k) { this.hasar(a, 42 * (0.8 + R() * 0.4), h, "yakin"); m.moral -= 1.2; }
+          }
+          if (a.ilkDarbe && a.yakinW === "mizrak" && a.atli && R() < 0.5) a.yakinW = "kilic"; // mızrak kırıldı
           if (this.yakinKamera(a)) ses("kilic", this.kamUzak(a));
         }
         a.poz = a.atli ? "ata_hucum" : "hucum"; if (a.atli) a.poz = "ata_hucum";
@@ -617,6 +680,18 @@ export class Savas {
       if (!oyuncu) return a.dolum > 0 && w.dolum > 2 ? "doldur" : null;
     }
     if (oyuncu) return null;
+    // tabanca: subaylar ve süvari yakın mesafede
+    a.tabT = (a.tabT || 0) - dt;
+    if (h && a.tabanca > 0 && a.tabT <= 0 && !m.bozuk && (a.anaYok || a.dolum > 0 || (a.atli && hareket))) {
+      const md = Math.sqrt(d2(a, h));
+      if (md < 26) {
+        a.tabT = 1.6 + R(); a.tabanca--; a.atisT = this.zaman; const tw = SILAHLAR.tabanca;
+        a.yon = aci(h.x - a.x, h.z - a.z); this.namluEfekt(a, tw);
+        if (R() < tw.isabet * (1 - md / 34) * (a.atli && hareket ? 0.6 : 1) * (1 - this.A.kapak(h.x, h.z) * 0.8)) this.hasar(h, tw.hasar * (0.8 + R() * 0.4), a, "mermi");
+        return "nisan";
+      }
+    }
+    if (a.anaYok) return null;
     if (!h || a.tutuk > 0 || a.mermi <= 0) { a.nisanT = 0; return null; }
     if (hareket && !(a.atli && (w.tur === "tufek" || w.tur === "tabanca"))) { a.nisanT = 0; return null; }
     if (m.bozuk) return null;
@@ -635,7 +710,8 @@ export class Savas {
     if (a.sarjor <= 0) a.dolum = w.dolum * (0.85 + R() * 0.3);
     this.namluEfekt(a, w);
     // isabet
-    let p = w.isabet * (1 - 0.65 * Math.pow(mes / w.menzil, 1.5)) * this.hava.isabet * (m.tanim.isabet || 1);
+    let p = 0.8 * w.isabet * (1 - 0.65 * Math.pow(mes / w.menzil, 1.5)) * this.hava.isabet * (m.tanim.isabet || 1) * diz(m).ates * diz(h.manga).hedef * (a.hafifYara ? 0.8 : 1);
+    if (this.rolBul(m, "subay")) p *= 1.06;
     p *= 1 - this.A.kapak(h.x, h.z) * (h.manga.tahkimat && h.taraf === 0 ? 1.1 : 0.9);
     if (h.atli) p *= 1.25; if (h.hiz > 2) p *= 0.85; if (a.atli) p *= 0.7;
     p *= 0.7 + 0.3 * clamp(m.moral / 100, 0, 1);
@@ -729,7 +805,7 @@ export class Savas {
       if (d > alan) continue;
       if (a.arac) { if ((w.delme || 0) >= (a.zirh || 0)) this.hasar(a, w.hasar * (1 - d / alan) * (a.zirh ? 0.8 : 1), null, "patlama"); else if (this.kamUzak(a) < 120) this.E.isabet(a.x, a.y + 1.5, a.z, "metal"); continue; }
       const kap = w.egik ? this.A.kapak(a.x, a.z) * 0.2 : this.A.kapak(a.x, a.z) * 0.6;
-      this.hasar(a, w.hasar * (1 - d / alan) * (1 - kap) * (0.7 + R() * 0.6), null, "patlama");
+      this.hasar(a, w.hasar * (1 - d / alan) * (1 - kap) * (0.7 + R() * 0.6) * diz(a.manga).topcu, null, "patlama");
     }
     for (const m of this.mangalar) if (m.cx !== undefined && (m.cx - x) ** 2 + (m.cz - z) ** 2 < (alan * 3) ** 2) { m.moral -= (w.roket && m.atli ? 9 : 4) * (m.tahkimat ? 0.6 : 1); m.sonKayip = this.zaman; }
   }
@@ -806,18 +882,23 @@ export class Savas {
     if (a.arac && a.zirh && tur === "mermi") return;
     a.can -= miktar;
     if (a.atli && a.at && a.can > 0 && a.can < 60 && R() < 0.3 && !a.arac) { a.atli = false; a.at = null; } // atı vuruldu
-    if (a.can > 0) return;
+    if (a.can > 0) { if (!a.hafifYara && !a.arac && a.can < a.maxCan * 0.5) a.hafifYara = true; return; }
     a.olu = true; a.olumT = 0; a.yon2 = R();
+    if (!a.arac && !a.komutan) a.yarali = R() < 0.55; // ağır yaralı: yere düşer, savaş dışı kalır, kurtarılabilir
+    if (a.rol === "subay" && !a.manga.bozuk) { a.manga.moral -= 12; if (a.taraf === 0) this.mesaj(`${a.manga.ad}: subayımız düştü!`, "kotu"); else if (R() < 0.4) this.mesaj("Düşman subayı vuruldu!", "iyi"); }
+    if (a.rol === "sancak") { a.manga.moral -= 10; if (a.taraf === 0) this.mesaj(`${a.manga.ad}: sancak yere düştü!`, "kotu"); }
     const m = a.manga;
     m.kayipSayi++; m.sonKayip = this.zaman;
     let kayipEtki = (m.taraf === 1 ? 62 : 85) / Math.max(4, m.baslangicBoy);
     if (this.sancakYakin(m)) kayipEtki *= 0.55;
+    if (this.rolBul(m, "sancak")) kayipEtki *= 0.8;
+    if (this.rolBul(m, "subay")) kayipEtki *= 0.85;
     if (m.komutanYakin) kayipEtki *= 0.75;
     m.moral -= kayipEtki;
     if (a.taraf === 1) { this.ist.dusen++; this.ist.olumYer.push({x: a.x, z: a.z}); }
     else {
       this.ist.kayip++;
-      if (!a.arac && R() < 0.45 && !a.komutan) { a.yarali = true; this.ist.yarali++; }
+      if (a.yarali) this.ist.yarali++;
       this.ist.bizOlumYer.push({x: a.x, z: a.z, yarali: a.yarali, m: m.kayit ? m.kayit.id : null});
     }
     if (a.arac) { this.E.patlama(a.x, a.y + 1, a.z, 1.4); ses("boom", this.kamUzak(a)); this.mesaj(a.taraf === 1 ? `Düşman ${m.tanim.ad} yok edildi!` : `${m.ad} kaybedildi!`, a.taraf === 1 ? "iyi" : "kotu"); }
@@ -830,7 +911,7 @@ export class Savas {
     // çok eski ölüleri ve haritadan çıkan kaçakları sil
     for (let i = this.askerler.length - 1; i >= 0; i--) {
       const a = this.askerler[i];
-      if (a.olu && a.olumT > 32 && !a.arac) { this.askerler.splice(i, 1); const k = a.manga.askerler.indexOf(a); if (k >= 0) a.manga.askerler.splice(k, 1); }
+      if (a.olu && a.olumT > (a.yarali ? 150 : 32) && !a.arac) { this.askerler.splice(i, 1); const k = a.manga.askerler.indexOf(a); if (k >= 0) a.manga.askerler.splice(k, 1); }
       else if (!a.olu && a.taraf === 1 && a.z < -this.A.S / 2 - 15) { a.olu = true; a.olumT = 99; this.ist.kacan++; const k = a.manga.askerler.indexOf(a); if (k >= 0) a.manga.askerler.splice(k, 1); this.askerler.splice(i, 1); }
     }
     for (const s of this.sandallar) if (s.vardi && !s.gitti) { s.gitti = true; }
