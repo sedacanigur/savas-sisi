@@ -44,3 +44,8 @@ Son Tabur'dan esinlenerek 15 yeni birlik eklendi (toplam 50'yi aştı):
 - **Performans:** büyük bölüklerde savaş sisi dokusu yalnızca bölük merkezlerinden hesaplanıyor; süvari tehdidi ve toparlanma kontrolleri önbellekten okunuyor.
 - **Denge (otomatik test, oyuncu müdahalesi olmadan):** ilk ayarda 5 dakikada 146 düşmana karşı yalnızca 8 kaybımız vardı (fazla kolay). Düşman dalgaları kalabalıklaştı, saldıran düşmanın isabeti +%20, düşman yakın mesafede yürürken de ateş edebiliyor. Bölükler artık ~%40–50 kayıpta bozuluyor (önceden neredeyse hiç bozulmuyordu). Yeni test: iki taraf da kayıp veriyor, yaralılar sahada kalıyor.
 - **Süvari ölçümü:** 3 düşman süvari bölüğü hat düzenindeki piyadeye ilk sürümde 126 kayıp verdirip 7 kayıp veriyordu. Atlıların ilk çarpışmadan sonraki vuruş hızı ve isabeti düşürüldü, süngü karşı darbesi hatta %30'a çıktı, süvari hücumu 15 sn sonra (ya da %40 kayıpta) toparlanmaya dönüyor. Sonuç: hattaki piyadeye karşı 66'ya 61 (dengeli), **kare düzeninde 0 kayıp** (süvari kareye çoğunlukla saldırmıyor).
+
+### 23:01 · Yayın ve belgeler
+- Testler: Ana Sefer döngüsü, iki denge senaryosu ve süvari testi hatasız. Oyuncu müdahalesi olmadan tepe/1866 savunması uzun sürede zorlaşıyor (düşman 400'ü geçiyor); komutan yetenekleri ve kare düzeni bu durumu çeviriyor.
+- README'ye yeni birlikler, kartlar, komutanlar, düzenler ve tuşlar eklendi.
+- Claude'daki oyun sayfası yeni sürümle güncellendi.

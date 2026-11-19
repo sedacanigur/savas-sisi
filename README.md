@@ -17,10 +17,17 @@ Ana Sefer (10 bölüm, 1866–1918), Serbest Savunma, Dalga Savunması, Tarihi S
 Piyade: hat piyadesi, avcı, zuhaf, muhafız alayı, tüfekçi, keskin nişancı, istihkâmcı, sıhhiye, sancak muhafızları, bomba eri, telefoncu, alev eri, hücum eri.
 Süvari: hafif süvari, mızraklı, kürasiyer, ejder, akıncı, Kazak, deve süvarisi, motosikletli, atlı topçu.
 Topçu ve makine: sahra, çelik, seri atışlı ve obüs bataryaları, katırlı dağ bataryası, kuşatma topu, roket bataryası, havan, Gatling, mitralyöz, Maxim.
+Yeni piyade/süvari: milis, grenadiyer, dağlılar, uzun mızraklılar, Bersaglieri, Tirol avcıları, efeler, gerilla, kızıl gömlekliler, lağımcı, bando, ölüm hüsarları, Spencer süvarisi, cephane arabası.
+Bölükler 30–65 kişidir (keşif/sıhhiye gibi küçük ekipler hariç). Bölüklerde subay, sancaktar ve borazancı vardır; subay ya da sancak düşerse moral sarsılır. Askerlerin ana silahının yanında kılıç, mızrak, yatağan, kama ya da tabanca gibi ikinci silahları vardır. Askerler yaralanabilir: hafif yaralı topallar, ağır yaralı yere düşer ve savaş sonunda revire gider.
+
+Savaştan önce **asker kartlarıyla** bölüklerini seçersin ve yanına en çok iki **komutan** alırsın (kampta Ordu → Komutanlar sekmesinden şanla tutulur). Her komutanın bir pasif etkisi ve `N`/`M` ile kullanılan bir yeteneği vardır.
+
+**Düzenler:** Hat, Kare (süvariye karşı), Kol (hızlı yürüyüş), Dağınık (topçuya karşı), Kama (hücum). Komutan modunda `Z` hat, `C` kare, `K` kol, `J` dağınık.
+
 Destek, araç, hava: ikmal arabası, gözetleme balonu, zırhlı otomobil, tank, keşif ve avcı uçağı, zeplin. Ayrıca Kışla'da kendi birliğini tasarlayabilirsin.
 
 ## Grafik
-Grafik ayarı (Düşük/Orta/Yüksek) sahadaki asker sayısını (160/320/520), düşman dalgalarının kalabalığını, çim ve ağaç yoğunluğunu, gölgeleri ve parçacık sayısını belirler. Duman, ateş ve toz dokuları kodla üretilir; patlamalarda ışık parlaması, ateş topu, toprak fıskiyesi, fizikli enkaz, şok dalgası, yanık izi ve duman sütunu vardır.
+Grafik ayarı (Düşük/Orta/Yüksek) sahadaki asker sayısını (500/900/1400), düşman dalgalarının kalabalığını, çim ve ağaç yoğunluğunu, gölgeleri ve parçacık sayısını belirler. Duman, ateş ve toz dokuları kodla üretilir; patlamalarda ışık parlaması, ateş topu, toprak fıskiyesi, fizikli enkaz, şok dalgası, yanık izi ve duman sütunu vardır.
 
 ## Kontroller
 | Asker (1. şahıs) | Komutan (3. şahıs) |
@@ -29,7 +36,10 @@ Grafik ayarı (Düşük/Orta/Yüksek) sahadaki asker sayısını (160/320/520), 
 | Sol tık ateş, sağ tık nişan, `R` doldur | Sağ tık: mangayı oraya gönder (`Shift` ile koşarak) |
 | `Q` süngü/kılıç, `G` el bombası | `G` hücum ya da topa hedef, `H` mevzini tut, `X` geri çekil |
 | `T` topçu ateşi, `F` işaret fişeği, `B` borazan | `T` topçu ateşi, `F` fişek, `B` borazan, sol tık tabanca |
+| `1/2/3` ana silah / tabanca / yakın silah | `Z/C/K/J` düzen, `N/M` komutan yetenekleri |
 | `V` komutana geç, `Tab` taktik harita | `V` askere geç, `Tab` taktik harita, `F1` yardım |
+
+`P` ya da sağ üstteki düğme savaşı duraklatır (ayarlar ve "Savaştan çekil" buradadır).
 
 ## Klasörler
 - `src/veri/` — ülkeler, silahlar, birlikler (süvari türleri dahil), teknoloji ve üretim ağacı, haritalar, iklim ve hava, hikâye ve kamp olayları
