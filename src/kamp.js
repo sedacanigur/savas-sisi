@@ -260,10 +260,9 @@ export class Kamp {
     m.querySelector(".git") && (m.querySelector(".git").onclick = () => { m.kapat(); this.sefereCik(b); });
   }
   sefereCik(b) {
-    const secili = K.ordu.filter(r => r.secili && r.asker > 0);
-    if (!secili.length) { toast("Savaşa gidecek manga seçmedin. Karargâh'tan seç."); return; }
     const gorev = {...b, bolumId: b.id, biz: "ardicova", dusman: b.dusman || "demirmark", dusmanAd: ULKELER[b.dusman || "demirmark"].ad};
-    gorevBaslat(gorev, {ordu: K.ordu, kalici: true, donus: () => { import("./kamp.js").then(m => { const k = new m.Kamp(false); motor.ekran(k); }); }});
+    kilitBirak();
+    gorevBaslat(gorev, {ordu: K.ordu, kalici: true, vazgec: () => kilitIste(), donus: () => { import("./kamp.js").then(m => { const k = new m.Kamp(false); motor.ekran(k); }); }});
   }
   pOrdu() {
     const b = this.sonrakiBolum();

@@ -13,7 +13,7 @@ export class Hud {
       <div class="ilerleme panel" hidden><div>SANCAK TEHLİKEDE</div><div class="cubuk"><i></i></div></div>
       <canvas id="minimap" width="210" height="210"></canvas>
       <div class="mesajlar"></div>
-      <div class="kartlar"></div>
+      <div class="kartlar"></div><div class="komutanlar"></div>
       <div class="silah panel"></div>
       <div class="nisangah"></div><div class="tik"></div>
       <div class="yardim panel" hidden></div>
@@ -28,6 +28,15 @@ export class Hud {
     motor.durbun = d => { this.q(".durbun").hidden = !d; };
     this.kartlarKur();
     this.etiket = new MangaEtiket(savas);
+    this.komutanKur();
+    motor.yeniManga = () => this.kartlarKur();
+  }
+  komutanKur() {
+    const k = this.q(".komutanlar"); k.innerHTML = "";
+    this.s.yardimci.forEach((Y, i) => {
+      const b = el(`<button class="kbtn"><span class="kyuz" style="background:${Y.k.renk}">${esc(Y.k.ini)}</span><span><b>${esc(Y.y.ad)}</b><span class="dur">${esc(Y.k.ad)}</span> · <span class="kbd">${i ? "M" : "N"}</span></span><i class="bek"></i></button>`);
+      b.onclick = () => this.s.yetenek(i, this.o.hedefNokta, this.o.seciliManga()); b.title = Y.y.aciklama; k.appendChild(b); Y._btn = b;
+    });
   }
   mesaj(t, tur = "bilgi") {
     const k = this.q(".mesajlar"); const m = el(`<div class="mesaj ${tur}">${esc(t)}</div>`); k.prepend(m);
@@ -70,6 +79,8 @@ export class Hud {
       const ics = c.querySelectorAll(".cubuk i");
       ics[0].style.width = (canli / Math.max(1, m.baslangicBoy) * 100) + "%"; ics[1].style.width = Math.max(0, m.moral) + "%";
     }
+    // yardımcı komutanlar
+    for (const Y of this.s.yardimci) { const b = Y._btn; if (!b) continue; b.disabled = Y.a.olu || s.bitti; b.classList.toggle("hazir", Y.hazir <= 0 && !Y.a.olu); b.querySelector(".bek").style.width = (Y.hazir > 0 ? 100 - Y.hazir / Y.y.bekleme * 100 : 100) + "%"; b.querySelector(".dur").textContent = Y.a.olu ? "yaralandı" : Y.hazir > 0 ? `${Math.ceil(Y.hazir)} sn` : "hazır"; }
     // silah
     const sw = this.q(".silah");
     if (o.mod === "asker" && o.asker && !o.asker.olu) {

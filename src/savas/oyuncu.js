@@ -107,6 +107,7 @@ export class Oyuncu {
     if (this.mod !== "taktik") { this.yaw -= G.fareDX * hs; this.pitch = Math.max(-1.3, Math.min(1.2, this.pitch - G.fareDY * hs)); }
     // sayı tuşları: manga seçimi
     if (this.mod !== "asker") for (let i = 1; i <= 9; i++) if (bas("Digit" + i)) this.sec(i - 1);
+    if (!this.ganimet && !s.bitti) { if (bas("KeyN")) s.yetenek(0, this.hedefNokta || this.ileriNokta(900), this.seciliManga()); if (bas("KeyM")) s.yetenek(1, this.hedefNokta || this.ileriNokta(900), this.seciliManga()); }
     if (this.mod !== "asker" && !this.ganimet) {
       const m = this.seciliManga(), d = bas("KeyZ") ? "hat" : bas("KeyC") ? "kare" : bas("KeyK") ? "kol" : bas("KeyJ") ? "daginik" : null;
       if (d && m) { s.emirVer(m, {tur: "dizilis", d}); ses("tik"); }

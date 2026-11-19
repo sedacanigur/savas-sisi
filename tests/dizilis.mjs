@@ -9,7 +9,7 @@ await p.evaluate(() => localStorage.setItem("savassisi-ayar-v1", JSON.stringify(
 await p.reload(); await bekle(1500);
 await p.click("text=Serbest Savunma"); await bekle(300);
 await p.selectOption(".modal select.harita", "koy");
-await p.click(".modal .basla"); await bekle(4000);
+await p.click(".modal .basla"); await bekle(700); if (await p.$(".ordukur .tamam")) { await p.click(".ordukur .tamam"); } await bekle(4000);
 await p.click(".ileri"); await bekle(1200); await p.click(".basla"); await bekle(800);
 await p.evaluate(() => { const s = window.__savas; const L = s.mangalar.filter(m => m.taraf === 0 && !m.komutan && !m.top && !m.mg && !m.atli);
   ["hat", "kare", "kol", "daginik"].forEach((d, i) => { if (L[i]) { s.yerlestir(L[i], -60 + i * 40, 60, Math.PI); s.dizilisDegistir(L[i], d); s.formasyon(L[i], true); } });

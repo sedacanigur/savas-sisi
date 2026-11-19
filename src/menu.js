@@ -73,9 +73,10 @@ function geciciOrdu(yil, slot, ekmekAz) {
   const d = donem(yil);
   const tek = {}; for (const t of TEKNOLOJILER) if (t.yil <= yil) tek[t.id] = true;
   geciciKayit({kaynak: {ekmek: 0, altin: 0, un: 0}, tek, ozel: {}, ordu: [], firin: 1, istatistik: {zafer: 0, yenilgi: 0, dusen: 0, kayip: 0, dogru: 0, yanlis: 0}});
-  const turler = [d.piyade, d.piyade, d.piyade, d.hafif, d.suvari[0], d.top, d.mg || d.piyade, yil >= 1866 ? "sancak_muhafiz" : d.piyade, yil >= 1870 ? "gozetleme_balonu" : d.suvari[1] || d.piyade, "sihhiyeci", d.agir || d.top];
-  for (const t of turler.slice(0, slot + 2)) if (t && BIRLIKLER[t]) K.ordu.push(yeniManga(t));
-  K.ordu.forEach((r, i) => r.secili = i < slot);
+  const turler = [d.piyade, d.piyade, d.hafif, d.suvari[0], d.top, d.mg || d.piyade, yil >= 1866 ? "sancak_muhafiz" : d.piyade, yil >= 1870 ? "gozetleme_balonu" : d.suvari[1] || d.piyade, "sihhiyeci"];
+  // önerilen ordu (kart ekranında değiştirilebilir)
+  for (const t of turler.slice(0, Math.min(slot, 5))) if (t && BIRLIKLER[t]) K.ordu.push(yeniManga(t));
+  K.ordu.forEach(r => r.secili = true);
   K.kaynak.ekmek = ekmekAz ? Math.ceil(slot / 2) : slot + 2;
 }
 function baslatGecici(g) {
@@ -83,7 +84,7 @@ function baslatGecici(g) {
   const biz = g.biz || "ardicova", dusman = g.dusman || (g.yil > 1910 ? "demirmark" : "demirmark");
   const gorev = {slot: 6, ...g, iklim, biz, dusman, dusmanAd: ULKELER[dusman].ad};
   geciciOrdu(gorev.yil, gorev.slot, g.ekmekAz);
-  gorevBaslat(gorev, {ordu: K.ordu, kalici: false, tercih: g.tercih, donus: () => anaMenu()});
+  gorevBaslat(gorev, {ordu: K.ordu, kalici: false, tercih: g.tercih, ekmekAz: g.ekmekAz, donus: () => anaMenu(), vazgec: () => {}});
 }
 
 export function dalgaUret(yil, zorluk = 1, sure = 420, gece = false) {

@@ -24,7 +24,7 @@ await p.evaluate(() => window.__motor.aktif.panel("kisla")); await bekle(500); a
 await p.click(".modal .tas"); await bekle(500); await foto("tasarim");
 await p.click(".modal .kyd"); await bekle(600); await p.keyboard.press("Escape"); await bekle(300);
 await p.evaluate(() => window.__motor.aktif.panel("firin")); await bekle(400); await foto("firin"); await p.keyboard.press("Escape"); await bekle(400);
-await p.keyboard.press("KeyM"); await bekle(400); await p.click(".modal .git"); await bekle(4500);
+await p.keyboard.press("KeyM"); await bekle(400); await p.click(".modal .git"); await bekle(700); await p.screenshot({path: "/tmp/sf_kartlar.png"}); if (await p.$(".ordukur .tamam")) { await p.click(".kom >> text=Çavuş Halit").catch(()=>{}); await p.click(".ordukur .tamam"); } await bekle(4500);
 await foto("a1");
 await p.click(".ileri"); await bekle(1200); await p.click(".basla"); await bekle(1500);
 await foto("a3_asker");

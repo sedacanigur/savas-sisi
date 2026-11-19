@@ -14,8 +14,8 @@ export const TEKNOLOJILER = [
   // ---------- piyade ----------
   {id: "igneli", ad: "İğneli tüfek", kol: "piyade", yil: 1866, on: [], maliyet: C(60, 20, 10), aciklama: "Avcı erlerini açar. Kuyruktan dolma: diz çökerek hızlı doldurma."},
   {id: "zuhaf", ad: "Zuhaf alayları", kol: "piyade", yil: 1860, on: [], maliyet: C(60, 0, 10), aciklama: "Hızlı, gözü pek zuhafları açar."},
-  {id: "muhafiz", ad: "Muhafız alayı", kol: "piyade", yil: 1862, on: ["sancak"], maliyet: C(90, 10, 10), aciklama: "Bozulmayan seçkin hat piyadesini açar."},
-  {id: "sancak", ad: "Sancak ve bando", kol: "piyade", yil: 1860, on: [], maliyet: C(40), aciklama: "Sancak muhafızlarını açar: çevredeki mangaların morali daha yavaş düşer."},
+  {id: "muhafiz", ad: "Muhafız alayı", kol: "piyade", yil: 1862, on: ["sancak"], maliyet: C(90, 10, 10), aciklama: "Muhafız alayı, grenadiyerler ve dağlı alayı."},
+  {id: "sancak", ad: "Sancak ve bando", kol: "piyade", yil: 1860, on: [], maliyet: C(40), aciklama: "Sancak muhafızları ve bando takımı: çevredeki bölüklerin morali daha yavaş düşer."},
   {id: "istihkam", ad: "İstihkâm okulu", kol: "piyade", yil: 1866, on: [], maliyet: C(50, 20), aciklama: "İstihkâmcıları açar. Aşama 1'de tahkimat daha ucuz."},
   {id: "durbun", ad: "Dürbünlü tüfek", kol: "piyade", yil: 1870, on: ["igneli"], maliyet: C(70, 20, 10), aciklama: "Keskin nişancıları açar."},
   {id: "metal_fisek", ad: "Metal fişek", kol: "piyade", yil: 1874, on: ["igneli"], maliyet: C(90, 30, 20), yukselt: {agizdan_tufek: "metal_fisek", igneli_tufek: "metal_fisek"}, aciklama: "Hat piyadesi ve avcılar metal fişekli tüfeğe geçer: yağmurda tutukluk biter."},
@@ -29,6 +29,7 @@ export const TEKNOLOJILER = [
   {id: "mizrak", ad: "Mızrak talimi", kol: "suvari", yil: 1860, on: [], maliyet: C(50, 10), aciklama: "Mızraklı süvariyi açar."},
   {id: "zirh", ad: "Göğüs zırhı", kol: "suvari", yil: 1862, on: ["mizrak"], maliyet: C(80, 40), aciklama: "Kürasiyerleri açar."},
   {id: "at_yetistirme", ad: "Haralar", kol: "suvari", yil: 1866, on: [], maliyet: C(60), aciklama: "Her görev sonunda +2 at."},
+  {id: "tekrarli", ad: "Tekrarlı karabina", kol: "suvari", yil: 1866, on: ["igneli"], maliyet: C(90, 30, 20), aciklama: "Tekrarlı karabinalı süvariyi açar."},
   {id: "ejder", ad: "Ejder alayları", kol: "suvari", yil: 1866, on: ["igneli"], maliyet: C(70, 10, 10), aciklama: "Atlı piyadeyi açar."},
   {id: "atli_top", ad: "Atlı topçu", kol: "suvari", yil: 1866, on: ["at_yetistirme"], maliyet: C(90, 30, 20), aciklama: "Hızla yer değiştiren topları açar."},
   {id: "deve", ad: "Deve süvarisi", kol: "suvari", yil: 1880, on: ["ejder"], maliyet: C(70, 10, 10), aciklama: "Çöl haritalarında çok güçlü."},

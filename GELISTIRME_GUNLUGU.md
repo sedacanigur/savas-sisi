@@ -18,3 +18,16 @@
 - **Bölük kadrosu:** her bölükte subay (kılıç + tabanca, moral ve isabet bonusu), sancaktar (moral) ve borazancı var. Subay ya da sancak düşerse bölüğün morali sarsılıyor. Ölenlerin yeri 2,5 saniyede bir dolduruluyor (saflar sıklaşıyor).
 - **Birden çok silah:** süvari karabina + tabanca + kılıç/mızrak taşıyor (mızrak ilk çarpışmada %50 kırılır, kılıca geçer); subaylar tabanca kullanıyor. 1. şahısta 1 tüfek, 2 tabanca, 3 kılıç/süngü. Yeni yakın silahlar: yatağan, uzun mızrak, kama.
 - Hata: çimlerin arka yüzleri karanlık görünüyordu, düzeltildi.
+
+### 22:41 · Yeni asker türleri
+Son Tabur'dan esinlenerek 15 yeni birlik eklendi (toplam 50'yi aştı):
+- **Piyade:** Milis (redif, 50 kişi, ucuz ama kolay bozulur), Grenadiyer (ağır piyade), Dağlı alayı (süvariye karşı duvar), Mızraklı piyade (tüfeksiz, uzun mızrakla süvari kırar), Bersaglieri (en hızlı piyade), Dağ avcısı (usta nişancı), Efeler ve zeybekler (tüfek + tabanca + yatağan), Çeteci (ormanda neredeyse görünmez), Kızıl gömlekliler (hücum gönüllüleri), Lağımcı (savaş başında önüne 8 kara mayını döşer), Bando takımı (50 m içindeki bölüklere moral).
+- **Süvari:** Ölüm hüsarları, Tekrarlı karabinalı süvari (attan inip 7 fişekle seri ateş).
+- **Destek:** Cephane arabası (cephane doldurur, topları %25 hızlandırır).
+- Yeni silahlar: tekrarlı karabina, kara mayını. Yeni teknoloji: Tekrarlı karabina.
+- Düşman dalgaları artık döneme göre grenadiyer, milis, kızıl gömlekli, bersaglieri, dağ avcısı, ölüm hüsarı ve tekrarlı karabinalı süvari de getiriyor.
+
+### 22:41 · Asker kartlarıyla ordu kurma ve yardımcı komutanlar
+- **Ordunu kur ekranı:** her görevden önce açılıyor. Her birlik bir kart: sınıf silueti, asker sayısı, Can/Ateş/Menzil/Yakın/Hız/Moral çubukları, silahları ve açıklaması. Ana Sefer'de kendi bölüklerini seçiyorsun (tecrübe yıldızları, revirdekiler görünür). Serbest modlarda **komuta puanıyla** istediğin karttan istediğin kadar alıyorsun (aynı karttan birden çok); sınıflara göre sekmeler var.
+- **Yardımcı komutanlar (en fazla 2):** 14 komutan. Ardıçova subayları (Yüzbaşı Demir, Çavuş Halit, Binbaşı Ayşe Kartal, Albay Rüstem Ardıç) ve tarihî komutanlar (Gazi Osman Paşa, Gazi Ahmed Muhtar Paşa, Mustafa Kemal, Moltke, Arşidük Albrecht, Garibaldi, Skobelev, Grant, Kitchener, Foch). Her birinin pasif etkisi (tahkimat, topçu, süvari, süngü, nişancılık, moral, keşif, ikmal, hız, kare) ve savaşta **N / M** tuşuyla ya da ekrandaki düğmeyle kullanılan bir yeteneği var: Yaylım ateşi, Kare olun, Toparlanın, Topçu barajı, Takviye (yeni bölük gelir), Hücum, Siper kazın, Keşif kolu (sis 25 sn kalkar), Cebrî yürüyüş. Komutanlar karargâhta atlı olarak duruyor; yaralanırlarsa yetenek kullanılamıyor.
+- Ana Sefer'de tarihî komutanlar ve iki Ardıçova subayı Karargâh'tan şanla davet edilerek açılıyor (sonraki adım).

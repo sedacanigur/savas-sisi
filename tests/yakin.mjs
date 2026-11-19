@@ -12,7 +12,7 @@ await p.reload(); await bekle(1500);
 await p.click("text=Serbest Savunma"); await bekle(300);
 await p.selectOption(".modal select.harita", harita); await p.selectOption(".modal select.saat", saat); await p.selectOption(".modal select.hava", hava);
 await p.$eval(".modal input.yil", (e, v) => { e.value = v; e.dispatchEvent(new Event("input")); }, yil);
-await p.click(".modal .basla"); await bekle(4000);
+await p.click(".modal .basla"); await bekle(700); if (await p.$(".ordukur .tamam")) { await p.click(".ordukur .tamam"); } await bekle(4000);
 await p.click(".ileri"); await bekle(1200); await p.click(".basla"); await bekle(800);
 await p.evaluate(() => window.__hiz = 6);
 await bekle(+sure * 1000);

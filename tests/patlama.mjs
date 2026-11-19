@@ -9,7 +9,7 @@ await p.evaluate(() => localStorage.setItem("savassisi-ayar-v1", JSON.stringify(
 await p.reload(); await bekle(1500);
 await p.click("text=Serbest Savunma"); await bekle(300);
 await p.selectOption(".modal select.harita", process.argv[2] || "tepe"); await p.selectOption(".modal select.saat", process.argv[3] || "gunduz");
-await p.click(".modal .basla"); await bekle(4000);
+await p.click(".modal .basla"); await bekle(700); if (await p.$(".ordukur .tamam")) { await p.click(".ordukur .tamam"); } await bekle(4000);
 await p.click(".ileri"); await bekle(1200); await p.click(".basla"); await bekle(800);
 // kamera: 1. bölüğün arkasından ileriye
 await p.evaluate(() => { const s = window.__savas; const m = s.mangalar.find(m => m.taraf === 0 && !m.komutan); const y = s.A.yuzey(m.x, m.z + 9);

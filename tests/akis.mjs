@@ -11,7 +11,7 @@ await p.goto("http://localhost:8765/index.html"); await bekle(2500);
 await p.click("text=Serbest Savunma"); await bekle(400);
 await p.selectOption(".modal select.harita", harita); await p.selectOption(".modal select.saat", saat); await p.selectOption(".modal select.hava", hava);
 await p.$eval(".modal input.yil", (e, v) => { e.value = v; e.dispatchEvent(new Event("input")); }, yil);
-await p.click(".modal .basla"); await bekle(5000);
+await p.click(".modal .basla"); await bekle(700); if (await p.$(".ordukur .tamam")) { await p.click(".ordukur .tamam"); } await bekle(5000);
 await p.screenshot({path: "/tmp/s_a1.png"});
 await p.click(".soru-btn"); await bekle(500);
 await p.screenshot({path: "/tmp/s_soru.png"});

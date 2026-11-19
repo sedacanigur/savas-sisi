@@ -5,6 +5,7 @@ import {Savas} from "./savas/savas.js";
 import {Oyuncu} from "./savas/oyuncu.js";
 import {Hud} from "./ui/hud.js";
 import {MangaEtiket} from "./ui/etiket.js";
+import {orduKur} from "./ui/kartlar.js";
 import {UI, el, esc, modal, toast, gecis, soruSor, temizle, acikModalVar} from "./ui/arayuz.js";
 import {K, AYAR, kaydet, birlikTanimi, ekle, arastirmaBitir, ayarKaydet} from "./kayit.js";
 import {G, tus, bas, kilitBirak, kilitAc} from "./girdi.js";
@@ -68,7 +69,10 @@ function otomatikYerlesim(s) {
 export async function gorevBaslat(gorev, op) {
   // op: {ordu: [kayıt mangaları], kalici: bool, mod, tercih, slot, donus: fn}
   sesBaslat();
-  const ctx = {gorev, ...op, rol: AYAR.kamera || "asker", puan: 0, soruKalan: 4, keşif: {}, topcu: 0, fisekEk: 0, ekSlot: 0};
+  const secim = await orduKur({...op, gorev});
+  if (!secim) { if (op.vazgec) op.vazgec(); return; }
+  op = {...op, ordu: op.kalici ? op.ordu : secim.ordu};
+  const ctx = {gorev, ...op, komutanlar: secim.komutanlar, rol: AYAR.kamera || "asker", puan: 0, soruKalan: 4, keşif: {}, topcu: 0, fisekEk: 0, ekSlot: 0};
   await gecis(() => {
     temizle();
     if (motor.aktif && motor.aktif.bitir) motor.aktif.bitir(); motor.aktif = null;
@@ -76,7 +80,7 @@ export async function gorevBaslat(gorev, op) {
     ctx.secili = secili;
     const mangalar = secili.map(r => ({tanim: birlikTanimi(r.tur), x: 0, z: 100, yon: Math.PI, kayit: r}));
     const tek = K.tek || {};
-    const s = new Savas(motor, {gorev, mangalar, grafik: motor.grafik(), konserve: !!tek.konserve, topcuHakki: (tek.telgraf ? 1 : 0)});
+    const s = new Savas(motor, {gorev, mangalar, grafik: motor.grafik(), konserve: !!tek.konserve, topcuHakki: (tek.telgraf ? 1 : 0), komutanlar: ctx.komutanlar});
     s.duraklat = true; ctx.s = s; motor.efekt = s.E; window.__savas = s;
     otomatikYerlesim(s);
     s.gorunurluk(); s.A.sis.u.sisGuc.value = 1;
@@ -252,7 +256,7 @@ function asama3(ctx) {
   temizle();
   s.topcuHakki += ctx.topcu; s.fisek += ctx.fisekEk;
   if (K.tek && K.tek.telefon && s.mangalar.some(m => m.taraf === 0 && m.tanim.ozel?.telefon)) s.topcuHakki += 2;
-  s.tahkimatKapak();
+  s.tahkimatKapak(); s.pasifUygula();
   s.A.sis.u.sisGuc.value = 0.8;
   s.duraklat = false;
   for (const m of s.mangalar) if (m.taraf === 0) { m.emir = {tur: "tut"}; for (const a of m.askerler) if (a.at && !m.tanim.ozel?.inip_savasir) a.atli = true; if (m.tanim.ozel?.inip_savasir) for (const a of m.askerler) a.atli = false; }
