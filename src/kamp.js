@@ -18,6 +18,8 @@ import {UI, el, esc, modal, toast, temizle, acikModalVar, bedelMetin, gecis, ona
 import {G, tus, bas, kilitIste, kilitBirak} from "./girdi.js";
 import {ses, sesBaslat, ortamSes} from "./ses.js";
 import {gorevBaslat} from "./akis.js";
+import {kartHTML} from "./ui/kartlar.js";
+import {KOMUTANLAR, PASIFLER, YETENEKLER} from "./veri/komutanlar.js";
 
 const R = Math.random;
 const aciFark = (a, b) => { let d = b - a; while (d > Math.PI) d -= Math.PI * 2; while (d < -Math.PI) d += Math.PI * 2; return d; };
@@ -35,9 +37,10 @@ export class Kamp {
     this.grup = new THREE.Group(); sahne.add(this.grup);
     this.yil = K ? BOLUMLER[Math.min(K.bolum, BOLUMLER.length - 1)].yil : 1866;
     const iklim = IKLIMLER.iliman;
-    this.H = havaKur(sahne, {hava: vitrin ? HAVALAR.acik : HAVALAR.bulutlu, saat: vitrin ? SAATLER.aksam : SAATLER.gunduz, iklim});
+    const ikindi = {ad: "İkindi", gunes: 26, renk: "#ffdcae", gok: ["#f7d7ac", "#7f9fcc"], isik: 1.05, gorus: 1};
+    this.H = havaKur(sahne, {hava: HAVALAR.acik, saat: vitrin ? SAATLER.aksam : ikindi, iklim});
     this.E = efektKur(sahne, 900); this.E.ruzgar.set(0.6, 0.3); motor.efekt = this.E; this.E.kam = motor.kamera; this.E.zemin = (x, z) => this.yukseklik(x, z);
-    this.K = new Kalabalik(sahne, 90, 20);
+    this.K = new Kalabalik(sahne, 140, 24);
     this.zeminKur();
     this.yapilarKur();
     this.halkKur();
@@ -47,9 +50,12 @@ export class Kamp {
   yukseklik(x, z) { return this.n.fbm(x / 90, z / 90, 3) * 2.5 + Math.max(0, Math.hypot(x, z) - 75) * 0.12; }
   zeminKur() {
     this.n = gurultu(77);
-    const geo = new THREE.PlaneGeometry(320, 320, 80, 80); geo.rotateX(-Math.PI / 2);
-    const p = geo.attributes.position, renk = new Float32Array(p.count * 3), c = new THREE.Color(), cim = new THREE.Color("#6a7f3e"), toprak = new THREE.Color("#7a6646");
-    for (let i = 0; i < p.count; i++) { const x = p.getX(i), z = p.getZ(i); p.setY(i, this.yukseklik(x, z)); const d = Math.hypot(x, z); c.copy(cim).lerp(toprak, Math.max(0, 1 - d / 42) * 0.7 + this.n(x / 8, z / 8) * 0.15); renk.set([c.r, c.g, c.b], i * 3); }
+    const geo = new THREE.PlaneGeometry(320, 320, 140, 140); geo.rotateX(-Math.PI / 2);
+    const p = geo.attributes.position, renk = new Float32Array(p.count * 3), c = new THREE.Color(), cim = new THREE.Color("#6a7f3e"), toprak = new THREE.Color("#8f7a58");
+    const yollar = [[0, 66, 0, 0], ...IST.map(s => [0, 0, s.x * 0.85, s.z * 0.85]), [0, 0, 0, -50]];
+    const yolUz = (x, z) => { let m = 1e9; for (const [x1, z1, x2, z2] of yollar) { const dx = x2 - x1, dz = z2 - z1, L = dx * dx + dz * dz; const t = Math.max(0, Math.min(1, ((x - x1) * dx + (z - z1) * dz) / L)); m = Math.min(m, Math.hypot(x - x1 - dx * t, z - z1 - dz * t)); } return m; };
+    const yolR = new THREE.Color("#a48c66");
+    for (let i = 0; i < p.count; i++) { const x = p.getX(i), z = p.getZ(i); p.setY(i, this.yukseklik(x, z)); const d = Math.hypot(x, z); c.copy(cim).lerp(toprak, Math.max(0, 1 - d / 30) * 0.55 + this.n(x / 8, z / 8) * 0.15); const yu = yolUz(x, z); if (yu < 3.2 && d < 66) c.lerp(yolR, (1 - yu / 3.2) * 0.85); renk.set([c.r, c.g, c.b], i * 3); }
     geo.setAttribute("color", new THREE.BufferAttribute(renk, 3)); geo.computeVertexNormals();
     const m = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({vertexColors: true})); m.receiveShadow = true; this.grup.add(m);
     // ağaç halkası
@@ -68,7 +74,27 @@ export class Kamp {
     this.koy(N.ates(), 0, 0);
     // harita masası çadırı
     this.koy(N.buyukCadir("#e2d6bb", 9, 7, 4), 0, -28); this.koy(N.masa("harita"), 0, -22.5);
-    this.koy(N.buyukCadir("#d8ccb0", 8, 7, 4), -26, -16, 0.6); this.koy(N.sancak(bayrak, 5), -22, -11);
+    this.koy(N.karargahCadiri(bayrak[0], bayrak[1], 6), -28, -18, 0.95);
+    for (const [x, z] of [[-21, -9], [-17, -15]]) this.koy(N.sancak(bayrak, 6.5), x, z);
+    this.koy(N.masa("harita"), -20, -12, 0.95);
+    // kazık çit ve kapı
+    for (let i = 0; i < 40; i++) { const a = i / 40 * Math.PI * 2; if (Math.abs(a - Math.PI / 2) < 0.12) continue; const x = Math.cos(a) * 64, z = Math.sin(a) * 64; const c = N.cit(10.2); this.koy(c, x, z, -a + Math.PI / 2); }
+    for (const x of [-4.5, 4.5]) { const k = new THREE.Group(); const d = new THREE.Mesh(new THREE.BoxGeometry(0.6, 6, 0.6), N.mat("#5a3c22")); d.position.y = 3; k.add(d); this.koy(k, x, 64); this.koy(N.sancak(bayrak, 7), x * 1.4, 66); }
+    const ust = new THREE.Mesh(new THREE.BoxGeometry(10, 0.5, 0.5), N.mat("#5a3c22")); this.koy(ust, 0, 64).position.y += 5.6;
+    // fenerler
+    this.fenerler = [];
+    for (const [x, z] of [[-6, 58], [6, 58], [-8, -20], [8, -20], [-14, 4], [14, 4], [-16, -26], [18, 20], [-14, 22]]) this.fenerler.push(this.koy(N.fener(), x, z, Math.random() * 6));
+    // çatılmış tüfekler, fıçılar, saman, yalak
+    for (const [x, z] of [[-26, 2], [-26, 14], [-12, 8], [-10, -6], [6, 14], [12, 2]]) this.koy(N.tufekCatisi(), x, z);
+    for (const [x, z] of [[30, 12], [31, 13.2], [29.6, 13.6], [16, 34], [17, 35], [-6, 30], [38, 0]]) this.koy(N.fici(), x, z);
+    for (const [x, z] of [[-32, 36], [-29, 39], [-16, 38]]) this.koy(N.saman(), x, z);
+    this.koy(N.yalak(), -22, 24); this.koy(N.bagliRay(12), -22, 34.5);
+    this.koy(N.topArabasi(), 18, 33, 0.4); this.koy(N.topArabasi(), 28, 34, -0.3);
+    // asker çadırları sırası (doğu ve batı)
+    for (let i = 0; i < 5; i++) { this.koy(N.cadir("#d8ccb0"), -46, -10 + i * 7, Math.PI / 2); this.koy(N.cadir("#cfc2a2"), 46, -4 + i * 7, -Math.PI / 2); }
+    for (let i = 0; i < 4; i++) this.koy(N.cadir("#d8ccb0"), -38 + i * 7, 46, Math.PI);
+    // ikinci ve üçüncü kamp ateşi
+    this.koy(N.ates(), -18, 10); this.koy(N.ates(), 14, 12);
     // harp okulu: taş bina
     const hb = new THREE.Group(); const gb = new THREE.Mesh(new THREE.BoxGeometry(10, 5, 7), N.mat("#b5ab98")); gb.position.y = 2.5; hb.add(gb);
     const cat = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 7.4, 3, 4), N.mat("#8c4a32")); cat.rotation.y = Math.PI / 4; cat.scale.set(1, 1, 0.7); cat.position.y = 6.5; hb.add(cat);
@@ -76,6 +102,7 @@ export class Kamp {
     this.koy(hb, 26, -17, -0.5);
     // kışla: çadır sırası
     for (let i = 0; i < 4; i++) this.koy(N.cadir("#d8ccb0"), -36, -2 + i * 6, Math.PI / 2);
+    this.ateslerYer = [[0, 0], [-18, 10], [14, 12]];
     // ahır
     const ah = new THREE.Group(); const zem = new THREE.Mesh(new THREE.BoxGeometry(12, 0.2, 6), N.mat("#6b4a2b")); ah.add(zem);
     for (const x of [-5.8, 5.8]) for (const z of [-2.8, 2.8]) { const d = new THREE.Mesh(new THREE.BoxGeometry(0.3, 3.4, 0.3), N.mat("#5a3c22")); d.position.set(x, 1.7, z); ah.add(d); }
@@ -109,9 +136,15 @@ export class Kamp {
     this.halk = [];
     // ateş başı
     for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2; this.halk.push(yeni(Math.cos(a) * 3.2, Math.sin(a) * 3.2, i % 3 === 0 ? "yemek" : "otur", Math.atan2(-Math.cos(a), -Math.sin(a)))); }
-    // nöbetçiler ve talim
-    this.halk.push(yeni(-8, -40, "dur", Math.PI), yeni(8, -40, "dur", Math.PI));
-    for (let i = 0; i < 6; i++) this.halk.push(yeni(-18 + (i % 3) * 1.6, 0 + Math.floor(i / 3) * 1.6, "yuru", 0, {talim: true, x0: -18 + (i % 3) * 1.6, z0: Math.floor(i / 3) * 1.6}));
+    // diğer ateşlerin başı
+    for (const [fx, fz] of [[-18, 10], [14, 12]]) for (let i = 0; i < 6; i++) { const a = i / 6 * Math.PI * 2 + 0.3; this.halk.push(yeni(fx + Math.cos(a) * 2.8, fz + Math.sin(a) * 2.8, i % 2 ? "yemek" : "otur", Math.atan2(-Math.cos(a), -Math.sin(a)))); }
+    // nöbetçiler (kapıda ve poligonda) ve talim bölüğü
+    this.halk.push(yeni(-8, -40, "dur", Math.PI), yeni(8, -40, "dur", Math.PI), yeni(-3, 61, "dur", 0), yeni(3, 61, "dur", 0));
+    for (let i = 0; i < 12; i++) this.halk.push(yeni(-14 + (i % 4) * 1.4, 0 + Math.floor(i / 4) * 1.5, "yuru", 0, {talim: true, x0: -14 + (i % 4) * 1.4, z0: Math.floor(i / 4) * 1.5}));
+    // karargâhta subaylar harita başında
+    for (const [x, z, y] of [[-21.5, -11, 2.4], [-18.6, -13, -0.6], [-19, -10.6, 3.6]]) this.halk.push(yeni(x, z, "dur", y, {model: null, ceketC: C("#1f3a37")}));
+    // dolaşanlar
+    for (let i = 0; i < 6; i++) { const a = R() * 6.28, r = 12 + R() * 30; this.halk.push(yeni(Math.cos(a) * r, Math.sin(a) * r, "yuru", 0, {gez: true, a, r, hz: 0.04 + R() * 0.03})); }
     // poligon atıcıları
     for (let i = 0; i < 3; i++) this.halk.push(yeni(-7 + i * 6, -44, "nisan", Math.PI, {poligon: true}));
     // ahırdaki atlar
@@ -176,7 +209,7 @@ export class Kamp {
       const L = Math.hypot(fx, fz), hz = tus("ShiftLeft") ? 5 : 2.2;
       if (L) { const sy = Math.sin(this.yaw), cy = Math.cos(this.yaw); const vx = (sy * fz + cy * fx) / L, vz = (cy * fz - sy * fx) / L; b.x += vx * hz * dt; b.z += vz * hz * dt; b.yon += aciFark(b.yon, Math.atan2(vx, vz)) * Math.min(1, dt * 10); b.poz = hz > 3 ? "kos" : "yuru"; b.hiz = hz; }
       else { b.poz = "dur"; b.hiz = 0; }
-      const r = Math.hypot(b.x, b.z); if (r > 68) { b.x *= 68 / r; b.z *= 68 / r; }
+      const r = Math.hypot(b.x, b.z); if (r > 61 && !(Math.abs(b.x) < 4 && b.z > 0)) { b.x *= 61 / r; b.z *= 61 / r; } if (r > 90) { b.x *= 90 / r; b.z *= 90 / r; }
       b.y = this.yukseklik(b.x, b.z);
       const m = 6.5, cp = Math.cos(this.pitch);
       kam.position.set(b.x - Math.sin(this.yaw) * m * cp, b.y + 2.6 - Math.sin(this.pitch) * m, b.z - Math.cos(this.yaw) * m * cp);
@@ -193,13 +226,15 @@ export class Kamp {
     // halk animasyonu
     for (const a of this.halk) {
       a.t += dt;
-      if (a.talim) { const f = Math.floor(a.t / 6) % 2; a.z = a.z0 + (f ? 1 : -1) * ((a.t % 6) - 3) * 0.6 + 2; a.yon = f ? 0 : Math.PI; a.hiz = 1.4; a.y = this.yukseklik(a.x, a.z); }
+      if (a.talim) { const f = Math.floor(this.t / 6) % 2; a.z = a.z0 + (f ? 1 : -1) * ((this.t % 6) - 3) * 0.7 + 2; a.yon = f ? 0 : Math.PI; a.hiz = 1.4; a.y = this.yukseklik(a.x, a.z); }
+      if (a.gez) { a.a += a.hz * dt; a.x = Math.cos(a.a) * a.r; a.z = Math.sin(a.a) * a.r; a.yon = -a.a; a.hiz = 1.2; a.y = this.yukseklik(a.x, a.z); }
       if (a.poligon && R() < dt * 0.25) { this.E.namlu(a.x, a.y + 1.45, a.z - 0.9, 0, -1, 1, false); ses("musket", Math.hypot(a.x - kam.position.x, a.z - kam.position.z)); }
       if (a.at) a.at.t += dt;
     }
     this.K.ciz(this.halk);
     // efektler
-    if (R() < dt * 30) this.E.ates(0, this.yukseklik(0, 0), 0);
+    for (const [fx, fz] of this.ateslerYer || [[0, 0]]) if (R() < dt * 24) this.E.ates(fx, this.yukseklik(fx, fz), fz);
+    if (this.fenerler) for (const f of this.fenerler) { const c = f.userData.isik; if (c) c.material.color.setHSL(0.11, 1, 0.62 + Math.sin(this.t * 9 + f.position.x) * 0.04); }
     if (R() < dt * 4) this.E.baca(35, this.yukseklik(35, 6) + 3, 7);
     if (this.atolyeObj.visible && R() < dt * 3) this.E.baca(46 + 2.5, 8, -32 - 1.7);
     this.E.guncelle(dt);
@@ -251,9 +286,9 @@ export class Kamp {
     const m = modal(`<span class="eyebrow">Harita Masası · Telgrafçı Selim</span><h2>${tamam ? "Sefer tamamlandı" : `${K.bolum + 1}. bölüm: ${esc(b.ad)} (${b.yil})`}</h2>
       ${tamam ? `<p>Bütün bölümler kazanıldı. Dilediğin bölümü yeniden oynayabilirsin:</p>` : `<p style="font-size:17px">${esc(b.brifing)}</p>
       <p class="soluk">${esc(HARITALAR[b.harita].ad)} · ${esc(HAVALAR[b.hava].ad)} · ${esc(SAATLER[b.saat].ad)} · en fazla <b>${b.slot}</b> manga · ${b.dalgalar.length} saldırı dalgası bekleniyor</p>
-      <p>Savaşa gidecek: <b>${secili.length}</b> manga ${secili.length > b.slot ? `<span class="cip uyari">ilk ${b.slot} gider</span>` : ""} · Ekmek: <b>${K.kaynak.ekmek}</b> ${K.kaynak.ekmek < Math.min(secili.length, b.slot) ? `<span class="cip kotu">yetersiz! Fırına uğra</span>` : ""}</p>`}
+      <p>Ordunda <b>${K.ordu.length}</b> bölük var; savaşa gidecekleri bir sonraki ekranda kartlarla seçeceksin. Ekmek: <b>${K.kaynak.ekmek}</b> ${K.kaynak.ekmek < b.slot ? `<span class="cip kotu">az olabilir! Fırına uğra</span>` : ""}</p>`}
       <div class="tekrar" style="display:flex;gap:6px;flex-wrap:wrap"></div>
-      <div class="alt"><button class="btn ordu">Karargâh: mangaları seç</button>${tamam ? "" : `<button class="btn ana git">Sefere çık ⚔</button>`}</div>`);
+      <div class="alt"><button class="btn ordu">Karargâh</button>${tamam ? "" : `<button class="btn ana git">Sefere çık ⚔</button>`}</div>`);
     if (tamam || K.bolum > 0) BOLUMLER.slice(0, Math.min(K.bolum, BOLUMLER.length)).forEach((x, i) => { const bb = el(`<button class="btn kucuk">${i + 1}. ${esc(x.ad)}</button>`); bb.onclick = () => { m.kapat(); this.sefereCik(x); }; m.querySelector(".tekrar").appendChild(bb); });
     if (!tamam && K.bolum > 0) m.querySelector(".tekrar").insertAdjacentHTML("afterbegin", `<span class="soluk" style="font-size:13px;align-self:center">Önceki bölümleri tekrar oyna:</span>`);
     m.querySelector(".ordu").onclick = () => { m.kapat(); this.pOrdu(); };
@@ -264,22 +299,44 @@ export class Kamp {
     kilitBirak();
     gorevBaslat(gorev, {ordu: K.ordu, kalici: true, vazgec: () => kilitIste(), donus: () => { import("./kamp.js").then(m => { const k = new m.Kamp(false); motor.ekran(k); }); }});
   }
-  pOrdu() {
+  pOrdu(sekme = "bolukler") {
+    if (sekme !== "komutanlar") sekme = "bolukler";
     const b = this.sonrakiBolum();
-    const ciz = () => {
-      const s = K.ordu.filter(r => r.secili && r.asker > 0).length;
-      m.querySelector(".govde").innerHTML = `<p>Savaşa gidecek mangaları işaretle (bu bölüm için en fazla <b>${b.slot}</b>; seçili: <b>${s}</b>). Takviye eksik askerleri tamamlar.</p>
-        <table class="tablo"><tr><th></th><th>Manga</th><th>Tür</th><th>Asker</th><th>Revir</th><th>Tecrübe</th><th></th></tr>
-        ${K.ordu.map((r, i) => { const d = birlikTanimi(r.tur); const eksik = r.boy - r.asker - (r.revir || 0); const bedel = Math.ceil((d.maliyet.altin || 0) / r.boy * eksik);
-          return `<tr><td><input type="checkbox" data-i="${i}" ${r.secili ? "checked" : ""} ${r.asker <= 0 ? "disabled" : ""}></td><td><b>${esc(r.ad)}</b></td><td>${esc(d.ad)}</td><td>${r.asker}/${r.boy}</td><td>${r.revir || 0}</td><td>${"★".repeat(Math.min(5, Math.floor((r.tecrube || 0) / 2))) || "—"}</td>
-          <td>${eksik > 0 ? `<button class="btn kucuk tk" data-i="${i}" ${K.kaynak.altin < bedel ? "disabled" : ""}>Takviye (${bedel} altın)</button>` : ""} <button class="btn kucuk dg" data-i="${i}">Dağıt</button></td></tr>`; }).join("")}</table>`;
-      m.querySelectorAll("input[data-i]").forEach(c => c.onchange = () => { K.ordu[+c.dataset.i].secili = c.checked; kaydet(); ciz(); });
-      m.querySelectorAll(".tk").forEach(c => c.onclick = () => { const r = K.ordu[+c.dataset.i]; const d = birlikTanimi(r.tur); const eksik = r.boy - r.asker - (r.revir || 0); const bedel = Math.ceil((d.maliyet.altin || 0) / r.boy * eksik); if (harca({altin: bedel})) { r.asker += eksik; kaydet(); ses("dogru"); ciz(); this.ustCiz(); } });
-      m.querySelectorAll(".dg").forEach(c => c.onclick = async () => { const r = K.ordu[+c.dataset.i]; if (await onayla("Manga dağıtılsın mı?", `${esc(r.ad)} dağıtılacak; askerler köylerine döner.`)) { K.ordu.splice(+c.dataset.i, 1); kaydet(); this.pOrdu(); } });
-    };
-    const m = modal(`<span class="eyebrow">Karargâh · Yüzbaşı Demir</span><h2>Ordu</h2><div class="govde"></div><div class="alt"><button class="btn kpt">Kapat</button><button class="btn ana hrt">Harita Masası →</button></div>`, {sinif: ""});
-    m.icerik.style.width = "min(900px,100%)";
+    const m = modal(`<span class="eyebrow">Karargâh · Yüzbaşı Demir</span><h2>Ordu ve komutanlar</h2>
+      <div style="display:flex;gap:6px;margin:6px 0 12px"><button class="btn kucuk ${sekme === "bolukler" ? "ana" : ""}" data-s="bolukler">Bölükler</button><button class="btn kucuk ${sekme === "komutanlar" ? "ana" : ""}" data-s="komutanlar">Yardımcı komutanlar</button></div>
+      <div class="govde"></div><div class="alt"><button class="btn kpt">Kapat</button><button class="btn ana hrt">Harita Masası →</button></div>`);
+    m.icerik.style.width = "min(1100px,100%)";
+    m.querySelectorAll("[data-s]").forEach(x => x.onclick = () => { m.kapat(); this.pOrdu(x.dataset.s); });
     m.querySelector(".kpt").onclick = () => m.kapat(); m.querySelector(".hrt").onclick = () => { m.kapat(); this.pHarita(); };
+    const G = m.querySelector(".govde");
+    const ciz = () => {
+      if (sekme === "komutanlar") {
+        K.komutanlar = K.komutanlar || [];
+        G.innerHTML = `<p>Savaşa en fazla iki yardımcı komutan götürebilirsin. Ardıçova subaylarının ikisi baştan seninle; diğerlerini <b>şan</b> karşılığı karargâha davet edebilirsin. Şan: <b>${K.kaynak.san || 0}</b></p><div class="uretim"></div>`;
+        const U = G.querySelector(".uretim");
+        for (const k of KOMUTANLAR) {
+          const acik = k.bedel === 0 || K.komutanlar.includes(k.id), erken = k.yil > this.yil + 2;
+          const c = el(`<div class="urun"><div style="display:flex;gap:10px;align-items:center"><div class="kyuz" style="background:${k.renk}">${esc(k.ini)}</div><div><b>${esc(k.ad)}</b><br><small>${esc(k.tanim)}</small></div></div>
+            <small><b>Pasif:</b> ${esc(PASIFLER[k.pasif])}</small><small><b>${esc(YETENEKLER[k.yetenek].ad)}:</b> ${esc(YETENEKLER[k.yetenek].aciklama)}</small>
+            ${acik ? `<span class="cip iyi" style="color:#2f6b3b;border-color:#2f6b3b">karargâhta</span>` : erken ? `<span class="soluk" style="font-size:12px">${k.yil} yılından sonra davet edilebilir</span>` : `<button class="btn kucuk ana dv" ${(K.kaynak.san || 0) >= k.bedel ? "" : "disabled"}>Davet et (${k.bedel} şan)</button>`}</div>`);
+          const dv = c.querySelector(".dv"); if (dv) dv.onclick = () => { if (harca({san: k.bedel})) { K.komutanlar.push(k.id); kaydet(); ses("dogru"); toast(`${k.ad} karargâha katıldı.`); this.ustCiz(); ciz(); } };
+          U.appendChild(c);
+        }
+        return;
+      }
+      const sec = K.ordu.filter(r => r.secili && r.asker > 0).length;
+      G.innerHTML = `<p>Bölüklerini buradan güçlendir. Hangilerinin savaşa gideceğini sefere çıkarken <b>Ordunu kur</b> ekranında seçeceksin (bu bölüm için en fazla <b>${b.slot}</b>).</p><div class="ok-kartlar" style="max-height:none;overflow:visible"></div>`;
+      const L = G.querySelector(".ok-kartlar");
+      K.ordu.forEach((r, i) => {
+        const d = birlikTanimi(r.tur); const eksik = r.boy - r.asker - (r.revir || 0); const bedel = Math.ceil((d.maliyet.altin || 0) / r.boy * eksik);
+        const yildiz = "★".repeat(Math.min(5, Math.floor((r.tecrube || 0) / 2)));
+        const alt = `${eksik > 0 ? `<button class="btn kucuk tk" ${K.kaynak.altin < bedel ? "disabled" : ""}>Takviye +${eksik} (${bedel} altın)</button>` : `<span class="cip iyi" style="color:#2f6b3b;border-color:#2f6b3b">tam kadro</span>`} <button class="btn kucuk dg">Dağıt</button>${r.revir ? ` <span class="cip kotu">revirde ${r.revir}</span>` : ""}`;
+        const c = el(`<div>${kartHTML({...d, ad: r.ad + " · " + d.ad}, {sayi: `${r.asker}/${r.boy}`, ust: yildiz || null, alt})}</div>`);
+        const tk = c.querySelector(".tk"); if (tk) tk.onclick = () => { if (harca({altin: bedel})) { r.asker += eksik; kaydet(); ses("dogru"); ciz(); this.ustCiz(); } };
+        c.querySelector(".dg").onclick = async () => { if (await onayla("Bölük dağıtılsın mı?", `${esc(r.ad)} dağıtılacak; askerler köylerine döner.`)) { K.ordu.splice(i, 1); kaydet(); this.pOrdu(); } };
+        L.appendChild(c);
+      });
+    };
     ciz();
   }
   pTek() {

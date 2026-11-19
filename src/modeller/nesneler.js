@@ -172,3 +172,43 @@ export function kumTorbasi(uz = 4, kat = 2) {
 export function ekmek() { const m = new THREE.Mesh(new THREE.SphereGeometry(0.15, 8, 6), mat("#c88a3e")); m.scale.set(1.6, 0.8, 1); return m; }
 export function topYigini() { const g = new THREE.Group(); for (let i = 0; i < 10; i++) at(g, new THREE.Mesh(new THREE.SphereGeometry(0.12, 8, 6), mat("#2b2b2b")), (i % 4) * 0.25 - 0.4, 0.12 + Math.floor(i / 4) * 0.2, (i % 2) * 0.2); return g; }
 export function hedefTahta() { const g = new THREE.Group(); at(g, box(0.1, 1.6, 0.1, "#5a4330"), 0, 0.8, 0); const t = new THREE.Mesh(new THREE.CircleGeometry(0.5, 16), mat("#e8e0c8")); t.position.set(0, 1.4, 0.06); g.add(t); for (const [r, c] of [[0.35, "#b3261e"], [0.2, "#e8e0c8"], [0.08, "#b3261e"]]) { const h = new THREE.Mesh(new THREE.CircleGeometry(r, 16), mat(c)); h.position.set(0, 1.4, 0.07 + (0.5 - r) * 0.01); g.add(h); } return g; }
+
+// ---------- kamp süsleri ----------
+function seritle(geo, c1, c2, adet) {
+  const g = geo.toNonIndexed(), p = g.attributes.position, renk = new Float32Array(p.count * 3), A = new THREE.Color(c1), B = new THREE.Color(c2);
+  for (let i = 0; i < p.count; i += 3) { const x = (p.getX(i) + p.getX(i + 1) + p.getX(i + 2)) / 3, z = (p.getZ(i) + p.getZ(i + 1) + p.getZ(i + 2)) / 3; const k = Math.floor((Math.atan2(z, x) / (Math.PI * 2) + 1) * adet) % 2 ? A : B; for (let j = 0; j < 3; j++) renk.set([k.r, k.g, k.b], (i + j) * 3); }
+  g.setAttribute("color", new THREE.BufferAttribute(renk, 3)); g.computeVertexNormals(); return g;
+}
+export function karargahCadiri(c1 = "#1f5a4a", c2 = "#efe6cf", r = 6.5) {
+  const g = new THREE.Group(), vm = new THREE.MeshLambertMaterial({vertexColors: true, side: THREE.DoubleSide});
+  const duvar = new THREE.Mesh(seritle(new THREE.CylinderGeometry(r, r, 3.2, 24, 1, true), c1, c2, 12), vm); duvar.position.y = 1.6; g.add(duvar);
+  const cati = new THREE.Mesh(seritle(new THREE.ConeGeometry(r * 1.12, 4.2, 24, 1, true), c1, c2, 12), vm); cati.position.y = 3.2 + 2.1; g.add(cati);
+  for (let i = 0; i < 24; i++) { const a = i / 24 * Math.PI * 2; const v = box(1.6, 0.45, 0.05, i % 2 ? c1 : c2); v.position.set(Math.cos(a) * r * 1.1, 3.05, Math.sin(a) * r * 1.1); v.rotation.y = -a + Math.PI / 2; g.add(v); }
+  at(g, cyl(0.12, 0.14, 9.4, "#5a4330", 6), 0, 4.7, 0);
+  // giriş saçağı
+  const sacak = box(5, 0.08, 3.4, c2); sacak.position.set(0, 3, r + 1.5); sacak.rotation.x = -0.12; g.add(sacak);
+  for (const x of [-2.4, 2.4]) at(g, box(0.12, 3, 0.12, "#5a4330"), x, 1.5, r + 3.1);
+  const kapi = box(2.2, 2.6, 0.1, "#2a241b"); kapi.position.set(0, 1.3, r + 0.02); g.add(kapi);
+  return g;
+}
+export function cit(uz = 6) { // kazık çit parçası
+  const g = new THREE.Group();
+  for (let x = -uz / 2; x <= uz / 2 + 0.01; x += 0.32) { const k = cyl(0.13, 0.15, 2.6 + Math.random() * 0.5, "#6b4a2b", 5); k.position.set(x, 1.3, 0); g.add(k); const uc = new THREE.Mesh(new THREE.ConeGeometry(0.14, 0.4, 5), mat("#6b4a2b")); uc.position.set(x, k.geometry.parameters.height + 0.2, 0); g.add(uc); }
+  at(g, box(uz, 0.12, 0.08, "#5a3c22"), 0, 1.9, 0.16); at(g, box(uz, 0.12, 0.08, "#5a3c22"), 0, 0.8, 0.16);
+  return g;
+}
+export function tufekCatisi() { // çatılmış tüfekler
+  const g = new THREE.Group();
+  for (let i = 0; i < 3; i++) { const a = i / 3 * Math.PI * 2; const t = box(0.05, 1.5, 0.05, "#4a3828"); t.position.set(Math.cos(a) * 0.25, 0.7, Math.sin(a) * 0.25); t.rotation.set(Math.sin(a) * 0.32, 0, -Math.cos(a) * 0.32); g.add(t); const s = box(0.015, 0.3, 0.015, "#a8adb3"); s.position.set(0, 1.55, 0); g.add(s); }
+  return g;
+}
+export function fici(renk = "#7a5634") { const g = new THREE.Group(); at(g, cyl(0.36, 0.36, 0.95, renk, 12), 0, 0.48, 0); for (const y of [0.15, 0.8]) at(g, cyl(0.38, 0.38, 0.06, "#3a3a3a", 12), 0, y, 0); return g; }
+export function saman() { const g = new THREE.Group(); const m = new THREE.Mesh(new THREE.SphereGeometry(1.4, 10, 7, 0, Math.PI * 2, 0, Math.PI / 2), mat("#c9a85a")); m.scale.set(1, 1.1, 1); g.add(m); return g; }
+export function yalak() { const g = new THREE.Group(); at(g, box(3, 0.6, 0.8, "#6b4a2b"), 0, 0.3, 0); at(g, box(2.8, 0.05, 0.6, "#4b6a7a"), 0, 0.56, 0); return g; }
+export function bagliRay(uz = 10) { const g = new THREE.Group(); at(g, box(uz, 0.12, 0.12, "#5a3c22"), 0, 1.1, 0); for (let x = -uz / 2; x <= uz / 2; x += uz / 3) at(g, box(0.16, 1.3, 0.16, "#5a3c22"), x, 0.65, 0); return g; }
+export function fener() {
+  const g = new THREE.Group(); at(g, box(0.1, 2.6, 0.1, "#3a2e22"), 0, 1.3, 0); at(g, box(0.5, 0.06, 0.06, "#3a2e22"), 0.22, 2.55, 0);
+  const cam = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.3, 0.22), new THREE.MeshBasicMaterial({color: "#ffcf7a"})); cam.position.set(0.45, 2.35, 0); g.add(cam);
+  g.userData.isik = cam; return g;
+}
+export function topArabasi() { const g = new THREE.Group(); at(g, box(1.2, 0.7, 1.4, "#5a4330"), 0, 0.9, 0); for (const s of [-1, 1]) { const t = new THREE.Mesh(new THREE.TorusGeometry(0.55, 0.06, 6, 14), mat("#4a3424")); t.rotation.y = Math.PI / 2; t.position.set(s * 0.75, 0.55, 0); g.add(t); } at(g, box(0.08, 0.08, 2.4, "#5a4330"), 0, 0.6, 1.8); return g; }
