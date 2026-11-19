@@ -4,9 +4,9 @@ export const SURUM = "0.1 · dikey dilim";
 
 // Grafik ayarları: aynı anda sahada olabilecek asker sayısı ve detay
 export const GRAFIK = {
-  dusuk:  {ad: "Düşük",  asker: 80,  arac: 6,  agac: 260, golge: false, arazi: 96,  piksel: 0.75, parcacik: 900},
-  orta:   {ad: "Orta",   asker: 160, arac: 12, agac: 520, golge: true,  arazi: 128, piksel: 1,    parcacik: 1800},
-  yuksek: {ad: "Yüksek", asker: 300, arac: 20, agac: 900, golge: true,  arazi: 176, piksel: 1.25, parcacik: 3000},
+  dusuk:  {ad: "Düşük",  asker: 160, arac: 8,  agac: 320,  golge: false, arazi: 112, piksel: 0.75, parcacik: 1400, cim: 3000,  kalabalik: 1},
+  orta:   {ad: "Orta",   asker: 320, arac: 14, agac: 700,  golge: true,  arazi: 160, piksel: 1,    parcacik: 2600, cim: 9000,  kalabalik: 1.3},
+  yuksek: {ad: "Yüksek", asker: 520, arac: 24, agac: 1100, golge: true,  arazi: 200, piksel: 1.25, parcacik: 4000, cim: 18000, kalabalik: 1.7},
 };
 
 export const VARSAYILAN_AYAR = {

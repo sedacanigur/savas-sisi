@@ -333,12 +333,12 @@ function asama4(ctx) {
     listeCiz();
   };
   const listeCiz = () => {
-    const L = sag.querySelector(".liste"); L.innerHTML = "";
-    hepsi.forEach(h => {
-      const d = Math.round(Math.hypot(h.x - s.komutan.x, h.z - s.komutan.z));
-      const b = el(`<button class="manga" ${h.acik ? "disabled" : ""}><span class="no">${h.tur === "yarali" ? "✚" : h.tur === "ozel" ? "★" : "▣"}</span><span><b>${h.tur === "yarali" ? "Yaralı asker" : h.tur === "ozel" ? "Özel sandık" : "Ganimet sandığı"}</b><small>${h.acik ? "tamam" : d + " m"}</small></span></button>`);
-      b.onclick = () => ac(h); L.appendChild(b);
+    const L = sag.querySelector(".liste");
+    if (!L.children.length) hepsi.forEach(h => {
+      const b = el(`<button class="manga"><span class="no">${h.tur === "yarali" ? "✚" : h.tur === "ozel" ? "★" : "▣"}</span><span><b>${h.tur === "yarali" ? "Yaralı asker" : h.tur === "ozel" ? "Özel sandık" : "Ganimet sandığı"}</b><small></small></span></button>`);
+      b.onclick = () => ac(h); L.appendChild(b); h.btn = b;
     });
+    for (const h of hepsi) { const d = Math.round(Math.hypot(h.x - s.komutan.x, h.z - s.komutan.z)); h.btn.disabled = h.acik; const t = h.acik ? "tamam" : d + " m"; const sm = h.btn.querySelector("small"); if (sm.textContent !== t) sm.textContent = t; }
     sag.querySelector(".toplam").innerHTML = `Toplanan: ${Object.entries(ctx.ganimet).map(([k, v]) => `${KAYNAK[k].simge} ${v}`).join(" · ") || "—"} · Kurtarılan yaralı: ${ctx.kurtarilanSayi}`;
   };
   listeCiz();

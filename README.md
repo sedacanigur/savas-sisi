@@ -13,6 +13,15 @@ Tasarımın tamamı için: [TASARIM.md](TASARIM.md). Oyunun görünen adı `src/
 ## Modlar
 Ana Sefer (10 bölüm, 1866–1918), Serbest Savunma, Dalga Savunması, Tarihi Savunmalar (Plevne, Arıburnu, Bazeilles), Köprü Tutma, Kamp Baskını, Kuşatma Altında, Günün Görevi, Tatbikat. Kıyı Savunması ve Konvoy Koruma henüz yapılmadı.
 
+## Birlikler
+Piyade: hat piyadesi, avcı, zuhaf, muhafız alayı, tüfekçi, keskin nişancı, istihkâmcı, sıhhiye, sancak muhafızları, bomba eri, telefoncu, alev eri, hücum eri.
+Süvari: hafif süvari, mızraklı, kürasiyer, ejder, akıncı, Kazak, deve süvarisi, motosikletli, atlı topçu.
+Topçu ve makine: sahra, çelik, seri atışlı ve obüs bataryaları, katırlı dağ bataryası, kuşatma topu, roket bataryası, havan, Gatling, mitralyöz, Maxim.
+Destek, araç, hava: ikmal arabası, gözetleme balonu, zırhlı otomobil, tank, keşif ve avcı uçağı, zeplin. Ayrıca Kışla'da kendi birliğini tasarlayabilirsin.
+
+## Grafik
+Grafik ayarı (Düşük/Orta/Yüksek) sahadaki asker sayısını (160/320/520), düşman dalgalarının kalabalığını, çim ve ağaç yoğunluğunu, gölgeleri ve parçacık sayısını belirler. Duman, ateş ve toz dokuları kodla üretilir; patlamalarda ışık parlaması, ateş topu, toprak fıskiyesi, fizikli enkaz, şok dalgası, yanık izi ve duman sütunu vardır.
+
 ## Kontroller
 | Asker (1. şahıs) | Komutan (3. şahıs) |
 |---|---|

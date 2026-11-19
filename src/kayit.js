@@ -26,7 +26,8 @@ export function yeniSefer() {
   mangaNo = 1;
   K = {surum: 1, kaynak: {...BASLANGIC_KAYNAK}, tek: {}, arastirma: null, bolum: 0, ordu: [], ozel: {}, firin: 1,
     olay: "giris", rutbe: 0, gorevSayisi: 0, istatistik: {zafer: 0, yenilgi: 0, dusen: 0, kayip: 0, dogru: 0, yanlis: 0}};
-  for (const t of ["hat_piyadesi", "hat_piyadesi", "hat_piyadesi", "hafif_suvari", "sahra_topu"]) K.ordu.push(yeniManga(t));
+  for (const t of ["hat_piyadesi", "hat_piyadesi", "hat_piyadesi", "hafif_suvari", "sahra_topu", "roket_bataryasi"]) K.ordu.push(yeniManga(t));
+  K.tek.roket = true;
   K.ordu[3].secili = false;
   kaydet();
   return K;

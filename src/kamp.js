@@ -36,7 +36,7 @@ export class Kamp {
     this.yil = K ? BOLUMLER[Math.min(K.bolum, BOLUMLER.length - 1)].yil : 1866;
     const iklim = IKLIMLER.iliman;
     this.H = havaKur(sahne, {hava: vitrin ? HAVALAR.acik : HAVALAR.bulutlu, saat: vitrin ? SAATLER.aksam : SAATLER.gunduz, iklim});
-    this.E = efektKur(sahne, 900); this.E.ruzgar.set(0.6, 0.3); motor.efekt = this.E;
+    this.E = efektKur(sahne, 900); this.E.ruzgar.set(0.6, 0.3); motor.efekt = this.E; this.E.kam = motor.kamera; this.E.zemin = (x, z) => this.yukseklik(x, z);
     this.K = new Kalabalik(sahne, 90, 20);
     this.zeminKur();
     this.yapilarKur();
@@ -105,7 +105,7 @@ export class Kamp {
     const uni = uniformaOf("ardicova", this.yil);
     const C = c => new THREE.Color(c);
     const ceket = C(uni.ceket), pan = C(uni.pantolon), sapkaC = C(uni.sapkaRenk);
-    const yeni = (x, z, poz, yon, ek = {}) => ({x, z, y: this.yukseklik(x, z), yon, poz, t: R() * 10, hiz: 0, ceketC: ceket, pantolonC: pan, sapka: uni.sapka, sapkaC, tenC: C(["#d9a77f", "#c99572", "#e1b48e", "#b98563"][(R() * 4) | 0]), model: poz === "otur" || poz === "yemek" ? null : "tufek", canta: false, ...ek});
+    const yeni = (x, z, poz, yon, ek = {}) => ({x, z, y: this.yukseklik(x, z), yon, poz, t: R() * 10, hiz: 0, ceketC: ceket, pantolonC: pan, sapka: uni.sapka, sapkaC, tenC: C(["#d9a77f", "#c99572", "#e1b48e", "#b98563"][(R() * 4) | 0]), kemerC: C("#e9e3d2"), cizmeC: C("#1d1a17"), model: poz === "otur" || poz === "yemek" ? null : "tufek", canta: false, ...ek});
     this.halk = [];
     // ateş başı
     for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2; this.halk.push(yeni(Math.cos(a) * 3.2, Math.sin(a) * 3.2, i % 3 === 0 ? "yemek" : "otur", Math.atan2(-Math.cos(a), -Math.sin(a)))); }

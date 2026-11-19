@@ -1,17 +1,17 @@
 // İklimler, hava durumları, günün saatleri ve harita düzenleri.
 
 export const IKLIMLER = {
-  iliman: {ad: "Ilıman", zemin: ["#5f7a3a", "#738a45", "#8a8a5a"], toprak: "#6b5a3e", agac: "yaprak", agacYogun: 1, kayaYogun: 0.5, sicaklik: 1,
+  iliman: {cim: "#7f9a4a", ad: "Ilıman", zemin: ["#5f7a3a", "#738a45", "#8a8a5a"], toprak: "#6b5a3e", agac: "yaprak", agacYogun: 1, kayaYogun: 0.5, sicaklik: 1,
     hava: {acik: 4, bulutlu: 3, yagmur: 2, sis: 2, firtina: 1}},
-  karli: {ad: "Karlı dağ", zemin: ["#d9dee3", "#c9d0d6", "#f2f4f6"], toprak: "#8a8f94", agac: "cam", agacYogun: 0.9, kayaYogun: 1, sicaklik: 0,
+  karli: {cim: null, ad: "Karlı dağ", zemin: ["#d9dee3", "#c9d0d6", "#f2f4f6"], toprak: "#8a8f94", agac: "cam", agacYogun: 0.9, kayaYogun: 1, sicaklik: 0,
     hava: {acik: 3, bulutlu: 3, kar: 4, sis: 2, firtina: 1}},
-  col: {ad: "Kurak / çöl", zemin: ["#c9a96b", "#d6b97d", "#b8955a"], toprak: "#a8854f", agac: "palmiye", agacYogun: 0.15, kayaYogun: 0.6, sicaklik: 2,
+  col: {cim: "#b8a46a", ad: "Kurak / çöl", zemin: ["#c9a96b", "#d6b97d", "#b8955a"], toprak: "#a8854f", agac: "palmiye", agacYogun: 0.15, kayaYogun: 0.6, sicaklik: 2,
     hava: {acik: 7, bulutlu: 2, firtina: 1, sis: 0}},
-  bataklik: {ad: "Orman ve bataklık", zemin: ["#41552d", "#4d6233", "#5d6b3f"], toprak: "#4a3f2c", agac: "yaprak", agacYogun: 1.8, kayaYogun: 0.2, sicaklik: 1,
+  bataklik: {cim: "#6a8240", ad: "Orman ve bataklık", zemin: ["#41552d", "#4d6233", "#5d6b3f"], toprak: "#4a3f2c", agac: "yaprak", agacYogun: 1.8, kayaYogun: 0.2, sicaklik: 1,
     hava: {acik: 2, bulutlu: 3, yagmur: 3, sis: 4}},
-  kiyi: {ad: "Kıyı", zemin: ["#6f8a46", "#86935a", "#d8c793"], toprak: "#7b6646", agac: "cali", agacYogun: 0.6, kayaYogun: 0.8, sicaklik: 1,
+  kiyi: {cim: "#8e9a58", ad: "Kıyı", zemin: ["#6f8a46", "#86935a", "#d8c793"], toprak: "#7b6646", agac: "cali", agacYogun: 0.6, kayaYogun: 0.8, sicaklik: 1,
     hava: {acik: 5, bulutlu: 3, yagmur: 1, sis: 2, firtina: 1}},
-  bozkir: {ad: "Bozkır", zemin: ["#9a9a5c", "#a9a265", "#8a8550"], toprak: "#7b6c48", agac: "cali", agacYogun: 0.25, kayaYogun: 0.4, sicaklik: 1,
+  bozkir: {cim: "#a9a564", ad: "Bozkır", zemin: ["#9a9a5c", "#a9a265", "#8a8550"], toprak: "#7b6c48", agac: "cali", agacYogun: 0.25, kayaYogun: 0.4, sicaklik: 1,
     hava: {acik: 5, bulutlu: 3, yagmur: 1, sis: 1, firtina: 1}},
 };
 

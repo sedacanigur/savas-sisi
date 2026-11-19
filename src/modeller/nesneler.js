@@ -10,6 +10,19 @@ const tekerlek = (r, c = "#4a3424") => { const g = new THREE.Group(); const t = 
 
 export function top(tur = "top", renk = "#3b3f45") {
   const g = new THREE.Group(); const ahsap = "#5a4330";
+  if (tur === "roket") {
+    for (const [x, z, r] of [[0, -0.5, 0], [-0.45, 0.35, 2.1], [0.45, 0.35, -2.1]]) at(g, box(0.05, 1.7, 0.05, ahsap), x * 0.8, 0.75, z * 0.8, 0.35 * Math.cos(r), 0, 0.35 * Math.sin(r));
+    const n = new THREE.Group(); n.position.set(0, 1.35, 0); g.add(n); n.rotation.x = -0.45;
+    at(n, cyl(0.08, 0.08, 1.8, "#4a4a4a", 8), 0, 0, 0.3, Math.PI / 2); at(n, new THREE.Mesh(new THREE.ConeGeometry(0.09, 0.25, 8), mat("#8a3a2a")), 0, 0, 1.3, Math.PI / 2);
+    for (let i = 0; i < 5; i++) at(g, cyl(0.06, 0.06, 1.1, "#7a5a3a", 6), -0.9 + i * 0.12, 0.08, -0.9, 0, 0, Math.PI / 2);
+    g.userData.namlu = n; return g;
+  }
+  if (tur === "dag" || tur === "agir") {
+    const k = tur === "dag" ? 0.68 : 1.55;
+    const t = top("top", renk); t.scale.set(k, k, k); g.add(t); g.userData.namlu = t.userData.namlu;
+    if (tur === "agir") { t.userData.namlu.rotation.x = -0.5; at(g, box(3.4, 0.25, 4.2, "#5a4a36"), 0, 0.12, -0.6); }
+    return g;
+  }
   const govde = new THREE.Group(); g.add(govde);
   const nam = tur === "obus" ? cyl(0.17, 0.22, 1.5, renk) : tur === "havan" ? cyl(0.1, 0.12, 0.9, renk) : cyl(0.1, 0.16, 2.1, renk);
   if (tur === "havan") {

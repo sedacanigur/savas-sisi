@@ -41,12 +41,14 @@ export function ses(tur, mesafe = 0, guc = 1) {
     case "pistol": gurultu(0.2, 2500, 300, 0.6 * k, 0, "lowpass"); break;
     case "gatling": case "mg": case "smg": gurultu(0.12, uzak ? 1000 : 2600, 300, 0.6 * k, 0, "lowpass"); break;
     case "cannon": gurultu(1.8, 700, 40, 1.2 * k, 0, "lowpass"); ton(70, 0.8, 0.5 * k, 0, "sine", 35); break;
-    case "boom": gurultu(2.2, 900, 30, 1.3 * k, 0, "lowpass"); ton(55, 1.2, 0.6 * k, 0, "sine", 25); break;
+    case "boom": gurultu(0.15, 4000, 800, 0.9 * k, 0, "lowpass"); gurultu(2.6, 900, 30, 1.4 * k, 0.02, "lowpass"); ton(55, 1.4, 0.7 * k, 0, "sine", 22); gurultu(1.5, 300, 60, 0.5 * k, 0.4, "lowpass"); break;
     case "boom_s": gurultu(1, 1200, 60, 0.9 * k, 0, "lowpass"); break;
     case "thump": gurultu(0.4, 400, 60, 0.7 * k, 0, "lowpass"); break;
     case "alev": gurultu(0.3, 600, 300, 0.4 * k, 0, "bandpass"); break;
     case "puf": gurultu(0.6, 1500, 400, 0.3 * k, 0, "bandpass"); break;
     case "isabet": gurultu(0.08, 2000, 800, 0.25 * k, 0, "bandpass", 2); break;
+    case "roket": gurultu(1.4, 3000, 400, 0.6 * k, 0, "bandpass", 0.6); gurultu(0.3, 600, 100, 0.6 * k, 0, "lowpass"); break;
+    case "islik": ton(1800, 1.1, 0.05 * k, 0, "sine", 500); break;
     case "vizilti": ton(1400 + Math.random() * 600, 0.12, 0.08 * k, 0, "sine", 600); break;
     case "kilic": ton(2400, 0.15, 0.1 * k, 0, "triangle", 1800); gurultu(0.1, 4000, 2000, 0.15 * k, 0, "highpass"); break;
     case "at": for (let i = 0; i < 4; i++) gurultu(0.07, 300, 120, 0.25 * k, i * 0.11, "lowpass"); break;

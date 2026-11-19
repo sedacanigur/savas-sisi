@@ -13,6 +13,8 @@ export const CAGLAR = [1860, 1870, 1885, 1900, 1914];
 export const TEKNOLOJILER = [
   // ---------- piyade ----------
   {id: "igneli", ad: "İğneli tüfek", kol: "piyade", yil: 1866, on: [], maliyet: C(60, 20, 10), aciklama: "Avcı erlerini açar. Kuyruktan dolma: diz çökerek hızlı doldurma."},
+  {id: "zuhaf", ad: "Zuhaf alayları", kol: "piyade", yil: 1860, on: [], maliyet: C(60, 0, 10), aciklama: "Hızlı, gözü pek zuhafları açar."},
+  {id: "muhafiz", ad: "Muhafız alayı", kol: "piyade", yil: 1862, on: ["sancak"], maliyet: C(90, 10, 10), aciklama: "Bozulmayan seçkin hat piyadesini açar."},
   {id: "sancak", ad: "Sancak ve bando", kol: "piyade", yil: 1860, on: [], maliyet: C(40), aciklama: "Sancak muhafızlarını açar: çevredeki mangaların morali daha yavaş düşer."},
   {id: "istihkam", ad: "İstihkâm okulu", kol: "piyade", yil: 1866, on: [], maliyet: C(50, 20), aciklama: "İstihkâmcıları açar. Aşama 1'de tahkimat daha ucuz."},
   {id: "durbun", ad: "Dürbünlü tüfek", kol: "piyade", yil: 1870, on: ["igneli"], maliyet: C(70, 20, 10), aciklama: "Keskin nişancıları açar."},
@@ -32,9 +34,10 @@ export const TEKNOLOJILER = [
   {id: "deve", ad: "Deve süvarisi", kol: "suvari", yil: 1880, on: ["ejder"], maliyet: C(70, 10, 10), aciklama: "Çöl haritalarında çok güçlü."},
   {id: "motor", ad: "Motosiklet", kol: "suvari", yil: 1910, on: ["atolye"], maliyet: C(100, 50, 0, 20), aciklama: "Motosikletli keşfi açar."},
   // ---------- topçu ----------
-  {id: "gatling", ad: "Gatling", kol: "topcu", yil: 1866, on: [], maliyet: C(80, 40, 20), aciklama: "Elle çevrilen seri ateş silahı."},
-  {id: "celik_top", ad: "Çelik top (Krupp tipi)", kol: "topcu", yil: 1870, on: [], maliyet: C(110, 60, 30), yukselt: {agizdan_top: "celik_top"}, aciklama: "Bataryalar çelik kuyruktan dolma topa geçer."},
-  {id: "obus", ad: "Obüs", kol: "topcu", yil: 1880, on: ["celik_top"], maliyet: C(130, 60, 40), aciklama: "Tepe arkasını vuran obüs bataryaları."},
+  {id: "roket", ad: "Savaş roketleri", kol: "topcu", yil: 1860, on: [], maliyet: C(50, 10, 30), aciklama: "Roket bataryalarını açar."},
+  {id: "gatling", ad: "Gatling ve mitralyöz", kol: "topcu", yil: 1866, on: [], maliyet: C(80, 40, 20), aciklama: "Elle çevrilen seri ateş silahı ve mitralyöz."},
+  {id: "celik_top", ad: "Çelik top (Krupp tipi)", kol: "topcu", yil: 1870, on: [], maliyet: C(110, 60, 30), yukselt: {agizdan_top: "celik_top"}, aciklama: "Bataryalar çelik kuyruktan dolma topa geçer; katırlı dağ bataryasını açar."},
+  {id: "obus", ad: "Obüs ve kuşatma topu", kol: "topcu", yil: 1880, on: ["celik_top"], maliyet: C(130, 60, 40), aciklama: "Tepe arkasını vuran obüsler ve dev kuşatma topu."},
   {id: "maxim", ad: "Maxim", kol: "topcu", yil: 1886, on: ["gatling"], maliyet: C(140, 60, 40), aciklama: "Su soğutmalı makineli tüfek."},
   {id: "seri_top", ad: "Seri atışlı top", kol: "topcu", yil: 1897, on: ["celik_top"], maliyet: C(160, 70, 40), yukselt: {celik_top: "seri_top"}, aciklama: "Geri tepme frenli modern top."},
   {id: "havan", ad: "Siper havanı", kol: "topcu", yil: 1915, on: ["obus"], maliyet: C(100, 40, 30), aciklama: "Taşınabilir dik atış."},

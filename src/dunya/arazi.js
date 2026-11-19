@@ -2,11 +2,26 @@
 // siper (kapak) haritası, rota noktaları ve savaş sisi dokusu.
 import * as THREE from "three";
 import {gurultu, rng, ss, clamp} from "./gurultu.js";
+import {birlestir} from "../modeller/kalabalik.js";
+
+// çim tutamı dokusu (kodla)
+let CIM = null;
+function cimDoku() {
+  if (CIM) return CIM;
+  const c = document.createElement("canvas"); c.width = 64; c.height = 64; const g = c.getContext("2d");
+  for (let i = 0; i < 26; i++) { const x = 6 + Math.random() * 52, h = 24 + Math.random() * 38, e = (Math.random() - 0.5) * 18; const l = 150 + Math.random() * 105;
+    g.strokeStyle = `rgb(${l},${l},${l})`; g.lineWidth = 1.5 + Math.random() * 1.8; g.beginPath(); g.moveTo(x, 64); g.quadraticCurveTo(x + e * 0.3, 64 - h * 0.6, x + e, 64 - h); g.stroke(); }
+  CIM = new THREE.CanvasTexture(c); CIM.colorSpace = THREE.SRGBColorSpace; CIM.generateMipmaps = false; CIM.minFilter = THREE.LinearFilter; return CIM;
+}
+const DETAY_GLSL = `
+float hs(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float vn(vec2 p){ vec2 i = floor(p), f = fract(p); f = f*f*(3.0-2.0*f); return mix(mix(hs(i), hs(i+vec2(1,0)), f.x), mix(hs(i+vec2(0,1)), hs(i+vec2(1,1)), f.x), f.y); }
+`;
 
 export const S = 520, YARI = S / 2;
 const KG = 130; // kapak ızgarası (4 m)
 
-export function araziKur(sahne, {tip = "tepe", iklim, seed = 1, seg = 128, agacSayisi = 520, kamp = false}) {
+export function araziKur(sahne, {tip = "tepe", iklim, seed = 1, seg = 128, agacSayisi = 520, kamp = false, cimSayisi = 8000}) {
   const n = gurultu(seed), r = rng(seed * 7 + 3);
   const A = {tip, S, suSeviye: null, hedef: {x: 0, z: 140, r: 22}, konus: {x0: -150, x1: 150, z0: 40, z1: 180},
     giris: {sol: {x: -150, z: -245}, merkez: {x: 0, z: -245}, sag: {x: 150, z: -245}}, rotalar: {}, cikarma: null,
@@ -126,13 +141,19 @@ export function araziKur(sahne, {tip = "tepe", iklim, seed = 1, seg = 128, agacS
   const SN = 96, sisVeri = new Uint8Array(SN * SN).fill(255);
   const sisTex = new THREE.DataTexture(sisVeri, SN, SN, THREE.RedFormat, THREE.UnsignedByteType);
   sisTex.magFilter = THREE.LinearFilter; sisTex.minFilter = THREE.LinearFilter; sisTex.needsUpdate = true;
-  const sisU = {sisTex: {value: sisTex}, sisGuc: {value: 0}, sisBoy: {value: S}};
+  const sisU = {sisTex: {value: sisTex}, sisGuc: {value: 0}, sisBoy: {value: S}, zaman: {value: 0}};
   const mat = new THREE.MeshLambertMaterial({vertexColors: true});
   mat.onBeforeCompile = sh => {
     Object.assign(sh.uniforms, sisU);
     sh.vertexShader = sh.vertexShader.replace("#include <common>", "#include <common>\nvarying vec3 vDunya;")
       .replace("#include <worldpos_vertex>", "#include <worldpos_vertex>\nvDunya = (modelMatrix * vec4(transformed,1.0)).xyz;");
-    sh.fragmentShader = sh.fragmentShader.replace("#include <common>", "#include <common>\nvarying vec3 vDunya; uniform sampler2D sisTex; uniform float sisGuc; uniform float sisBoy;")
+    sh.fragmentShader = sh.fragmentShader.replace("#include <common>", "#include <common>\nvarying vec3 vDunya; uniform sampler2D sisTex; uniform float sisGuc; uniform float sisBoy;" + DETAY_GLSL)
+      .replace("#include <color_fragment>", `#include <color_fragment>
+        vec2 dp = vDunya.xz;
+        float d1 = vn(dp * 0.9), d2 = vn(dp * 3.3), d3 = vn(dp * 0.07), d4 = vn(dp * 0.25 + 17.0);
+        diffuseColor.rgb *= 0.8 + 0.18 * d1 + 0.1 * d2 + 0.1 * d4;
+        diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(1.12, 1.05, 0.82), smoothstep(0.55, 0.9, d3) * 0.6);
+        diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(0.85, 0.92, 0.8), smoothstep(0.6, 0.95, d4) * 0.5);`)
       .replace("#include <dithering_fragment>", `#include <dithering_fragment>
         float g = texture2D(sisTex, vDunya.xz / sisBoy + 0.5).r;
         float s = (1.0 - g) * sisGuc;
@@ -231,10 +252,10 @@ export function araziKur(sahne, {tip = "tepe", iklim, seed = 1, seg = 128, agacS
     const tur = iklim.agac;
     const govGeo = new THREE.CylinderGeometry(0.18, 0.3, 1, 5); govGeo.translate(0, 0.5, 0);
     let tepeGeo;
-    if (tur === "cam") { tepeGeo = new THREE.ConeGeometry(2.2, 6.5, 7); tepeGeo.translate(0, 5, 0); }
-    else if (tur === "palmiye") { tepeGeo = new THREE.ConeGeometry(3.2, 1.2, 7); tepeGeo.translate(0, 6.6, 0); }
-    else if (tur === "cali") { tepeGeo = new THREE.IcosahedronGeometry(1.4, 0); tepeGeo.translate(0, 1.1, 0); }
-    else { tepeGeo = new THREE.IcosahedronGeometry(2.6, 0); tepeGeo.translate(0, 5, 0); }
+    if (tur === "cam") { tepeGeo = birlestir([new THREE.ConeGeometry(2.4, 3.6, 8).translate(0, 3.6, 0), new THREE.ConeGeometry(1.9, 3.2, 8).translate(0, 5.3, 0), new THREE.ConeGeometry(1.3, 2.8, 8).translate(0, 7, 0)]); }
+    else if (tur === "palmiye") { const yap = []; for (let i = 0; i < 7; i++) yap.push(new THREE.BoxGeometry(0.5, 0.06, 3.2).translate(0, 0, 1.6).rotateX(0.35).rotateY(i / 7 * Math.PI * 2)); tepeGeo = birlestir(yap).translate(0, 6.6, 0); }
+    else if (tur === "cali") { tepeGeo = birlestir([new THREE.IcosahedronGeometry(1.2, 1).translate(0, 1.0, 0), new THREE.IcosahedronGeometry(0.9, 1).translate(0.8, 0.8, 0.3)]); }
+    else { tepeGeo = birlestir([new THREE.IcosahedronGeometry(2.2, 1).translate(0, 5, 0), new THREE.IcosahedronGeometry(1.7, 1).translate(1.3, 5.9, 0.4), new THREE.IcosahedronGeometry(1.6, 1).translate(-1.2, 5.6, -0.6), new THREE.IcosahedronGeometry(1.4, 1).translate(0.2, 6.8, -0.3)]); }
     const gov = new THREE.InstancedMesh(govGeo, M("#5a4330"), agaclar.length), tepe = new THREE.InstancedMesh(tepeGeo, new THREE.MeshLambertMaterial({color: "#ffffff"}), agaclar.length);
     const o = new THREE.Object3D(), c = new THREE.Color();
     const yb = {cam: "#2f4f35", palmiye: "#5f7a2f", cali: "#5d6a3a", yaprak: "#4f6f32"}[tur] || "#4f6f32";
@@ -257,6 +278,28 @@ export function araziKur(sahne, {tip = "tepe", iklim, seed = 1, seg = 128, agacS
     const o = new THREE.Object3D();
     kayalar.forEach((k, i) => { o.position.set(k.x, A.yukseklik(k.x, k.z) + k.s * 0.2, k.z); o.rotation.set(r() * 3, r() * 3, r() * 3); o.scale.set(k.s * 1.3, k.s * 0.8, k.s); o.updateMatrix(); km.setMatrixAt(i, o.matrix); if (k.s > 1) A.kapakEkle(k.x, k.z, k.s + 1, 0.3); });
     km.castShadow = true; km.receiveShadow = true; A.grup.add(km);
+  }
+  // ---------- çim tutamları ----------
+  const cimRenk = iklim.cim;
+  if (cimRenk && cimSayisi > 0) {
+    const n2 = tip === "vaha" ? cimSayisi * 0.2 : cimSayisi;
+    const geo = birlestir([new THREE.PlaneGeometry(0.8, 0.45).translate(0, 0.22, 0), new THREE.PlaneGeometry(0.8, 0.45).translate(0, 0.22, 0).rotateY(Math.PI / 2)]);
+    geo.setAttribute("uv", new THREE.Float32BufferAttribute([0, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 0], 2));
+    const nr = geo.attributes.normal; for (let i = 0; i < nr.count; i++) nr.setXYZ(i, 0, 1, 0); // zemin gibi aydınlansın
+    const cm = new THREE.MeshLambertMaterial({map: cimDoku(), alphaTest: 0.45, side: THREE.DoubleSide});
+    cm.onBeforeCompile = sh => { sh.uniforms.zaman = sisU.zaman; sh.vertexShader = sh.vertexShader.replace("#include <common>", "#include <common>\nuniform float zaman;").replace("#include <begin_vertex>", `#include <begin_vertex>
+      vec4 wp = instanceMatrix * vec4(0.0,0.0,0.0,1.0); float sal = sin(zaman * 1.7 + wp.x * 0.3 + wp.z * 0.2) * 0.12 * position.y; transformed.x += sal; transformed.z += sal * 0.6;`); };
+    const cim = new THREE.InstancedMesh(geo, cm, Math.round(n2)); const o = new THREE.Object3D(), c = new THREE.Color(); let k = 0;
+    for (let d = 0; k < n2 && d < n2 * 4; d++) {
+      const x = (r() - 0.5) * S * 0.96, z = (r() - 0.5) * S * 0.96;
+      if (A.suSeviye !== null && A.yukseklik(x, z) < A.suSeviye + 0.3) continue;
+      if (tip === "vaha" && Math.hypot(x, z - 155) > 70) continue;
+      if (tip === "siper" && z > -165 && z < 70 && r() < 0.8) continue;
+      if (n.fbm(x / 40, z / 40 + 80, 2) < -0.25) continue;
+      o.position.set(x, A.yukseklik(x, z) - 0.05, z); o.rotation.set(0, r() * 3, 0); const sc = 0.6 + r() * 0.9; o.scale.set(sc, sc * (0.7 + r() * 0.6), sc); o.updateMatrix(); cim.setMatrixAt(k, o.matrix);
+      c.set(cimRenk).offsetHSL((r() - 0.5) * 0.04, (r() - 0.5) * 0.1, (r() - 0.5) * 0.1 + 0.04); cim.setColorAt(k, c); k++;
+    }
+    cim.count = k; cim.receiveShadow = true; A.grup.add(cim);
   }
   sahne.add(A.grup);
   A.dispose = () => { sahne.remove(A.grup); A.grup.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach(m => m.dispose()); }); sisTex.dispose(); };

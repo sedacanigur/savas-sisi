@@ -23,7 +23,8 @@ for (let i = 0; i < 3; i++) {
     let en = bz[0], ed = 1e9; for (const a of bz) { const d = (a.x - h.x) ** 2 + (a.z - h.z) ** 2; if (d < ed) { ed = d; en = a; } }
     const mx = (h.x + en.x) / 2, mz = (h.z + en.z) / 2; const y = s.A.yuzey(mx, mz); const L = Math.sqrt(ed);
     const yan = i % 2 ? 1 : -1;
-    return {k: [mx + yan * L * 0.55, y + 6 + L * 0.12, mz + L * 0.15, mx, y + 1, mz], n: e.length, t: s.zaman, dusen: s.ist.dusen, kayip: s.ist.kayip, L};
+    const kx = en.x + (h.x - en.x) * 0.25 + yan * 14, kz = en.z + (h.z - en.z) * 0.25 + 10;
+    return {k: [kx, s.A.yuzey(kx, kz) + 4.5, kz, h.x, h.y + 1, h.z], n: e.length, t: s.zaman, dusen: s.ist.dusen, kayip: s.ist.kayip, L};
   }, i);
   console.log(JSON.stringify(c));
   if (c && c.k) await p.evaluate(k => window.__kam = k, c.k);

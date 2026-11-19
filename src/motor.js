@@ -8,7 +8,7 @@ const tuval = document.getElementById("sahne");
 G.tuval = tuval;
 const renderer = new THREE.WebGLRenderer({canvas: tuval, antialias: true, powerPreference: "high-performance"});
 renderer.outputColorSpace = THREE.SRGBColorSpace;
-renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.12;
 renderer.shadowMap.type = THREE.PCFShadowMap;
 const sahne = new THREE.Scene();
 const kamera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.05, 2600);

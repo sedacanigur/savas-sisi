@@ -1,5 +1,6 @@
 // Gökyüzü, ışık, sahne sisi, yağmur/kar, şimşek ve işaret fişekleri.
 import * as THREE from "three";
+import {efektDokulari} from "../savas/efekt.js";
 
 export function havaKur(sahne, {hava, saat, iklim, gecePuslu = false}) {
   const grup = new THREE.Group(); sahne.add(grup);
@@ -20,7 +21,7 @@ export function havaKur(sahne, {hava, saat, iklim, gecePuslu = false}) {
   sahne.background = ufukRenk.clone();
   // ışıklar
   const L = saat.isik * (1 - hava.bulut * 0.35);
-  const hemi = new THREE.HemisphereLight(tepeRenk.clone().lerp(new THREE.Color("#ffffff"), 0.5), new THREE.Color(iklim.zemin[0]).multiplyScalar(0.6), 0.55 * L + 0.15);
+  const hemi = new THREE.HemisphereLight(tepeRenk.clone().lerp(new THREE.Color("#ffffff"), 0.5), new THREE.Color(iklim.zemin[0]).multiplyScalar(0.7), 0.75 * L + 0.22);
   grup.add(hemi);
   const gunes = new THREE.DirectionalLight(saat.renk, 1.6 * L);
   const yuk = Math.max(8, Math.abs(saat.gunes)) * Math.PI / 180;
@@ -35,6 +36,22 @@ export function havaKur(sahne, {hava, saat, iklim, gecePuslu = false}) {
     const yp = []; for (let i = 0; i < 900; i++) { const t = Math.random() * Math.PI * 2, f = Math.random() * 1.3; yp.push(Math.cos(t) * Math.cos(f) * 1300, Math.sin(f) * 1300 + 30, Math.sin(t) * Math.cos(f) * 1300); }
     const yg = new THREE.BufferGeometry(); yg.setAttribute("position", new THREE.Float32BufferAttribute(yp, 3));
     if (hava.bulut < 0.8) grup.add(new THREE.Points(yg, new THREE.PointsMaterial({color: "#dfe6ff", size: 2, sizeAttenuation: false, fog: false, transparent: true, opacity: 0.8 * (1 - hava.bulut)})));
+  }
+  // güneş/ay diski ve bulutlar
+  const D = efektDokulari();
+  const diskC = document.createElement("canvas"); diskC.width = diskC.height = 128; const dg = diskC.getContext("2d");
+  const gr = dg.createRadialGradient(64, 64, 0, 64, 64, 64); gr.addColorStop(0, "rgba(255,255,255,1)"); gr.addColorStop(0.12, "rgba(255,250,235,1)"); gr.addColorStop(0.2, "rgba(255,230,190,0.5)"); gr.addColorStop(1, "rgba(255,200,150,0)"); dg.fillStyle = gr; dg.fillRect(0, 0, 128, 128);
+  const disk = new THREE.Sprite(new THREE.SpriteMaterial({map: new THREE.CanvasTexture(diskC), color: saat.gunes < 0 ? "#cfd8ff" : saat.renk, transparent: true, depthWrite: false, fog: false, blending: THREE.AdditiveBlending, opacity: 1 - hava.bulut * 0.85}));
+  disk.scale.set(saat.gunes < 0 ? 90 : 220, saat.gunes < 0 ? 90 : 220, 1); disk.renderOrder = -9; grup.add(disk);
+  const bulutlar = [];
+  const bulutSayi = Math.round(6 + hava.bulut * 26);
+  for (let i = 0; i < bulutSayi; i++) {
+    const m = new THREE.Sprite(new THREE.SpriteMaterial({map: D.duman, transparent: true, depthWrite: false, fog: false,
+      color: new THREE.Color(saat.gunes < 0 ? "#3a4256" : "#ffffff").lerp(new THREE.Color("#8a9096"), hava.bulut * 0.6).lerp(new THREE.Color(saat.renk), saat.gunes < 15 && saat.gunes > 0 ? 0.35 : 0),
+      opacity: (0.55 + Math.random() * 0.35) * (0.5 + hava.bulut * 0.5)}));
+    const a = Math.random() * Math.PI * 2, d = 300 + Math.random() * 700, sc = 180 + Math.random() * 320;
+    m.position.set(Math.cos(a) * d, 180 + Math.random() * 160 - d * 0.08, Math.sin(a) * d); m.scale.set(sc, sc * (0.35 + Math.random() * 0.2), 1); m.renderOrder = -8;
+    m.material.rotation = (Math.random() - 0.5) * 0.3; grup.add(m); bulutlar.push(m);
   }
   // yağış
   let yagis = null; const YN = hava.yagis === "kar" ? 5000 : 7000;
@@ -62,6 +79,8 @@ export function havaKur(sahne, {hava, saat, iklim, gecePuslu = false}) {
     },
     guncelle(dt, kamera, odak) {
       gok.position.copy(kamera.position);
+      disk.position.set(kamera.position.x + gunesYon.x * 1200, kamera.position.y + Math.max(0.12, gunesYon.y) * 1200, kamera.position.z + gunesYon.z * 1200);
+      for (const b of bulutlar) b.position.x += hava.ruzgar * 0.4 * dt * (1 + (b.position.y - 180) / 300);
       const o = odak || kamera.position;
       gunes.position.set(o.x + gunesYon.x * 200, o.y + gunesYon.y * 200, o.z + gunesYon.z * 200);
       gunes.target.position.set(o.x, o.y, o.z);
