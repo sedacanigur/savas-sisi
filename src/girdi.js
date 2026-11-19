@@ -13,12 +13,14 @@ addEventListener("keydown", e => {
 });
 addEventListener("keyup", e => G.tus.delete(e.code));
 addEventListener("blur", () => { G.tus.clear(); G.sol = G.sag = false; });
-addEventListener("mousemove", e => { G.x = e.clientX; G.y = e.clientY; if (G.kilitli) { G.fareDX += e.movementX; G.fareDY += e.movementY; } });
+addEventListener("mousemove", e => { G.x = e.clientX; G.y = e.clientY; if (G.kilitli || (G.kilitYok && G.kilitIzin && e.target === G.tuval)) { G.fareDX += e.movementX; G.fareDY += e.movementY; } });
+// Fare kilidi açılamazsa (ör. gömülü sayfa) fare serbestken de bakış çalışsın
+document.addEventListener("pointerlockerror", () => { G.kilitYok = true; });
 addEventListener("mousedown", e => {
   if (e.target !== G.tuval && !G.kilitli) return;
   if (e.button === 0) { G.sol = true; G.solBas = true; G.solTik = true; }
   if (e.button === 2) { G.sag = true; G.sagBas = true; G.sagTik = true; }
-  if (G.kilitIzin && !G.kilitli && e.target === G.tuval) G.tuval.requestPointerLock?.();
+  if (G.kilitIzin && !G.kilitli && !G.kilitYok && e.target === G.tuval) { try { const p = G.tuval.requestPointerLock?.(); if (p && p.catch) p.catch(() => { G.kilitYok = true; }); } catch (err) { G.kilitYok = true; } }
 });
 addEventListener("mouseup", e => { if (e.button === 0) G.sol = false; if (e.button === 2) G.sag = false; });
 addEventListener("contextmenu", e => { if (e.target === G.tuval || G.kilitli) e.preventDefault(); });

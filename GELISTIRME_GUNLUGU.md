@@ -37,3 +37,10 @@ Son Tabur'dan esinlenerek 15 yeni birlik eklendi (toplam 50'yi aştı):
 - Üç kamp ateşi ve başlarında yemek yiyen askerler, 12 kişilik talim bölüğü, kampta dolaşan askerler.
 - Işık: kampta sıcak bir **ikindi ışığı** (önceki akşam sahnesi fazla karanlıktı).
 - **Karargâh paneli** yenilendi: bölükler kart olarak görünüyor (takviye ve dağıt düğmeleriyle). Yeni **Yardımcı komutanlar** sekmesinden tarihî komutanlar ve iki Ardıçova subayı **şan** karşılığı davet ediliyor; dönemi gelmemiş komutanlar kilitli.
+
+### 22:55 · Denge testleri, duraklatma menüsü, fare kilidi, performans
+- **Duraklatma menüsü:** P tuşu ya da ekrandaki "❚❚ Duraklat" düğmesi (fare serbestken Esc de açar). Savaş durur; fare hassasiyeti ve ses buradan ayarlanır, kontrol listesi görünür, istenirse "Savaştan çekil".
+- **Fare kilidi açılamazsa** (ör. sayfa başka bir sayfanın içinde açıldıysa) bakış artık fare serbestken de çalışıyor.
+- **Performans:** büyük bölüklerde savaş sisi dokusu yalnızca bölük merkezlerinden hesaplanıyor; süvari tehdidi ve toparlanma kontrolleri önbellekten okunuyor.
+- **Denge (otomatik test, oyuncu müdahalesi olmadan):** ilk ayarda 5 dakikada 146 düşmana karşı yalnızca 8 kaybımız vardı (fazla kolay). Düşman dalgaları kalabalıklaştı, saldıran düşmanın isabeti +%20, düşman yakın mesafede yürürken de ateş edebiliyor. Bölükler artık ~%40–50 kayıpta bozuluyor (önceden neredeyse hiç bozulmuyordu). Yeni test: iki taraf da kayıp veriyor, yaralılar sahada kalıyor.
+- **Süvari ölçümü:** 3 düşman süvari bölüğü hat düzenindeki piyadeye ilk sürümde 126 kayıp verdirip 7 kayıp veriyordu. Atlıların ilk çarpışmadan sonraki vuruş hızı ve isabeti düşürüldü, süngü karşı darbesi hatta %30'a çıktı, süvari hücumu 15 sn sonra (ya da %40 kayıpta) toparlanmaya dönüyor. Sonuç: hattaki piyadeye karşı 66'ya 61 (dengeli), **kare düzeninde 0 kayıp** (süvari kareye çoğunlukla saldırmıyor).

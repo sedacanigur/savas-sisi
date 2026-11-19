@@ -8,7 +8,7 @@ import {MangaEtiket} from "./ui/etiket.js";
 import {orduKur} from "./ui/kartlar.js";
 import {UI, el, esc, modal, toast, gecis, soruSor, temizle, acikModalVar} from "./ui/arayuz.js";
 import {K, AYAR, kaydet, birlikTanimi, ekle, arastirmaBitir, ayarKaydet} from "./kayit.js";
-import {G, tus, bas, kilitBirak, kilitAc} from "./girdi.js";
+import {G, tus, bas, kilitBirak, kilitAc, kilitIste} from "./girdi.js";
 import {KAYNAK} from "./veri/oyun.js";
 import {BIRLIKLER, donem} from "./veri/birlikler.js";
 import {HAVALAR, SAATLER} from "./veri/haritalar.js";
@@ -266,6 +266,21 @@ function asama3(ctx) {
   borazan("hucum");
   s.mesaj("Savaş başladı! Mevzileri tutun!", "uyari");
   let bitisT = -1;
+  const durakla = () => {
+    if (s.bitti || document.querySelector(".durak")) return;
+    s.duraklat = true; kilitBirak();
+    const m = modal(`<div class="durak"><span class="eyebrow">Duraklatıldı</span><h2>${esc(ctx.gorev.ad || s.harita.ad)}</h2>
+      <p class="soluk">${Math.floor(s.zaman / 60)} dk ${Math.floor(s.zaman % 60)} sn · düşen düşman ${s.ist.dusen} · kaybımız ${s.ist.kayip}</p>
+      <div class="ayar-satir"><span>Fare hassasiyeti</span><input type="range" class="has" min="0.3" max="2.5" step="0.1" value="${AYAR.hassasiyet}"></div>
+      <div class="ayar-satir"><span>Ses</span><input type="range" class="ses" min="0" max="1" step="0.05" value="${AYAR.ses}"></div>
+      <p class="ipucu" style="color:#6b6250">Asker: WASD · Shift koş · C diz · sol tık ateş · sağ tık nişan · R doldur · 1/2/3 silah · Q süngü · G bomba<br>Komutan: 1–9 bölük · sağ tık git · G hücum · H tut · X geri · Z/C/K/J düzen · T topçu · N/M komutan yeteneği · V rol · Tab taktik harita</p>
+      <div class="alt"><button class="btn cek">Savaştan çekil</button><button class="btn ana dev">Devam et</button></div></div>`, {kapat: false});
+    const kapat = () => { AYAR.hassasiyet = +m.querySelector(".has").value; import("./ses.js").then(x => x.sesSeviye(+m.querySelector(".ses").value)); ayarKaydet(); m.kapat(); s.duraklat = false; if (o.mod !== "taktik") kilitIste(); };
+    m.querySelector(".dev").onclick = kapat;
+    m.querySelector(".cek").onclick = () => { m.kapat(); s.duraklat = false; s.bitir(false, "Komutan geri çekilme emri verdi."); };
+  };
+  UI.appendChild(el(`<button class="btn kucuk panel" id="durak-btn" style="position:fixed;top:12px;right:234px;z-index:6" title="Duraklat (P)">❚❚ Duraklat</button>`));
+  document.getElementById("durak-btn").onclick = durakla;
   motor.savasBitti = (sonuc) => {
     ctx.sonuc = sonuc; bitisT = 4.5;
     hud.buyuk(`${sonuc.zafer ? "ZAFER" : "YENİLGİ"}<br><span style="font-size:20px">${esc(sonuc.neden)}</span>`);
@@ -273,7 +288,8 @@ function asama3(ctx) {
   motor.ekran({
     guncelle(dt) {
       const ki = document.getElementById("kilit-istem"); if (ki) ki.hidden = G.kilitli || o.mod === "taktik" || s.bitti;
-      if (bas("Escape") || bas("KeyP")) {}
+      if ((bas("Escape") && !G.kilitli) || bas("KeyP")) durakla();
+      if (s.duraklat) { s.ciz(); return; }
       o.guncelle(dt);
       motor.odak = o.mod === "asker" && o.asker ? o.asker : s.komutan;
       for (let k = 0; k < (window.__hiz || 1); k++) s.guncelle(dt);
