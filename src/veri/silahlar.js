@@ -1,0 +1,56 @@
+// Silahlar. Bütün değerler oyunda gerçekten kullanılır.
+// menzil (m) · isabet (0–1, en iyi koşulda) · hasar (can) · dolum (sn) · sarjor (atış) · aralik (iki atış arası sn)
+// duman: barut dumanı miktarı (0 = dumansız) · tutukluk: temel tutukluk ihtimali · yagmur: yağmurda tutukluk çarpanı
+// delme: zırh delme (0 yok · 1 hafif zırh · 2 tank) · model: elde görünen model · ses: ses türü
+export const SILAHLAR = {
+  agizdan_tufek: {ad: "Ağızdan dolma tüfek", tur: "tufek", yil: 1850, menzil: 140, isabet: 0.34, hasar: 60, dolum: 14, sarjor: 1, aralik: 1, duman: 1.4, tutukluk: 0.06, yagmur: 4, delme: 0, model: "tufek", ses: "musket",
+    aciklama: "Güçlü ama çok yavaş doldurulur. Ayakta doldurulur, yağmurda barut ıslanır, kalın duman çıkarır."},
+  igneli_tufek: {ad: "İğneli tüfek", tur: "tufek", yil: 1866, menzil: 170, isabet: 0.42, hasar: 55, dolum: 5, sarjor: 1, aralik: 1, duman: 1.0, tutukluk: 0.03, yagmur: 2, delme: 0, model: "tufek", ses: "musket",
+    aciklama: "Kuyruktan dolma. Diz çökerek ya da yatarak hızla doldurulabilir."},
+  metal_fisek: {ad: "Metal fişekli tüfek", tur: "tufek", yil: 1874, menzil: 220, isabet: 0.5, hasar: 55, dolum: 3.2, sarjor: 1, aralik: 1, duman: 0.8, tutukluk: 0.015, yagmur: 1.3, delme: 0, model: "tufek", ses: "rifle",
+    aciklama: "Metal fişek yağmurdan etkilenmez; daha uzun menzil."},
+  sarjorlu_tufek: {ad: "Şarjörlü tüfek", tur: "tufek", yil: 1889, menzil: 300, isabet: 0.56, hasar: 55, dolum: 4, sarjor: 5, aralik: 1.1, duman: 0, tutukluk: 0.008, yagmur: 1, delme: 0, model: "tufek", ses: "rifle",
+    aciklama: "Dumansız barut: ateş edenin yeri belli olmaz. 5 fişeklik şarjör."},
+  keskin_tufek: {ad: "Dürbünlü keskin nişancı tüfeği", tur: "tufek", yil: 1870, menzil: 420, isabet: 0.8, hasar: 100, dolum: 3, sarjor: 1, aralik: 1, duman: 0.4, tutukluk: 0.01, yagmur: 1.5, delme: 0, model: "keskin", ses: "rifle", durbun: 4,
+    aciklama: "Dürbün ve nefes tutma (Shift). Rüzgâr mermiyi sürükler. Subayları ve topçuları hedefler."},
+  karabina: {ad: "Süvari karabinası", tur: "tufek", yil: 1860, menzil: 110, isabet: 0.3, hasar: 45, dolum: 6, sarjor: 1, aralik: 1, duman: 0.9, tutukluk: 0.03, yagmur: 2, delme: 0, model: "karabina", ses: "musket",
+    aciklama: "Kısa tüfek. At üstünde ya da attan inince kullanılır."},
+  tabanca: {ad: "Toplu tabanca", tur: "tabanca", yil: 1855, menzil: 40, isabet: 0.4, hasar: 40, dolum: 5, sarjor: 6, aralik: 0.55, duman: 0.4, tutukluk: 0.01, yagmur: 1.5, delme: 0, model: "tabanca", ses: "pistol",
+    aciklama: "Subay silahı. Yakın mesafede hızlı."},
+  hafif_makineli: {ad: "Hafif makineli", tur: "makineli", yil: 1917, menzil: 90, isabet: 0.28, hasar: 34, dolum: 3, sarjor: 32, aralik: 0.09, duman: 0, tutukluk: 0.004, yagmur: 1, delme: 0, model: "hm", ses: "smg",
+    aciklama: "Siper baskınları için. Yakında çok etkili, uzakta dağılır."},
+  gatling: {ad: "Gatling", tur: "makineli", yil: 1866, menzil: 260, isabet: 0.22, hasar: 40, dolum: 6, sarjor: 40, aralik: 0.16, duman: 0.5, tutukluk: 0.01, yagmur: 1.5, delme: 0, model: "gatling", ses: "gatling", sabit: true,
+    aciklama: "Elle çevrilen çok namlulu silah. Ekip gerekir, tutukluk yapabilir."},
+  maxim: {ad: "Maxim makineli tüfek", tur: "makineli", yil: 1886, menzil: 380, isabet: 0.24, hasar: 45, dolum: 5, sarjor: 250, aralik: 0.1, duman: 0, tutukluk: 0.002, yagmur: 1, delme: 0, model: "maxim", ses: "mg", sabit: true, isinma: true,
+    aciklama: "Sürekli ateş eder, süvari hücumlarını durdurur. Isınır; su soğutması gerekir."},
+  el_bombasi: {ad: "El bombası", tur: "bomba", yil: 1904, menzil: 30, isabet: 0.7, hasar: 90, alan: 6, dolum: 2.5, sarjor: 1, aralik: 1, duman: 0.8, tutukluk: 0, yagmur: 1, delme: 1, model: "bomba", ses: "boom_s",
+    aciklama: "Siperdeki düşmanı temizler. Alan hasarı verir."},
+  sis_bombasi: {ad: "Sis bombası", tur: "sis", yil: 1915, menzil: 35, isabet: 1, hasar: 0, alan: 14, dolum: 2.5, sarjor: 1, aralik: 1, duman: 6, tutukluk: 0, yagmur: 1, delme: 0, model: "bomba", ses: "puf",
+    aciklama: "Görüşü keser. Savaş sisinin en güzel hâli."},
+  alev: {ad: "Alev silahı", tur: "alev", yil: 1915, menzil: 22, isabet: 0.75, hasar: 30, dolum: 8, sarjor: 30, aralik: 0.12, duman: 0.6, tutukluk: 0.01, yagmur: 1.5, delme: 1, model: "alev", ses: "alev",
+    aciklama: "Siper ve sığınaklara karşı. Menzili çok kısa; düşmanın moralini hızla bozar."},
+  // ---- yakın dövüş ----
+  sungu: {ad: "Süngü", tur: "yakin", yil: 1700, menzil: 2.2, isabet: 0.55, hasar: 50, aralik: 1.2, model: "", ses: "",
+    aciklama: "Tüfeğin ucundaki bıçak. Süngü hücumu düşmanın moralini sarsar."},
+  kilic: {ad: "Kılıç", tur: "yakin", yil: 1700, menzil: 2.6, isabet: 0.6, hasar: 55, aralik: 1, model: "kilic", ses: "",
+    aciklama: "Süvari ve subay silahı."},
+  mizrak: {ad: "Mızrak", tur: "yakin", yil: 1700, menzil: 3.4, isabet: 0.7, hasar: 90, aralik: 1.4, ilkDarbe: 2, model: "mizrak", ses: "",
+    aciklama: "İlk çarpışmada çok güçlüdür; uzun boyu sayesinde önce o vurur."},
+  // ---- topçu ----
+  agizdan_top: {ad: "Ağızdan dolma sahra topu", tur: "top", yil: 1850, menzil: 700, isabet: 0.5, hasar: 120, alan: 5, dolum: 22, sarjor: 1, aralik: 1, duman: 4, tutukluk: 0.03, yagmur: 3, delme: 1, model: "top", ses: "cannon", misket: true,
+    aciklama: "Yakına misket, uzağa gülle atar. Kalın duman bulutu bırakır."},
+  celik_top: {ad: "Çelik kuyruktan dolma top", tur: "top", yil: 1870, menzil: 1100, isabet: 0.6, hasar: 150, alan: 6, dolum: 12, sarjor: 1, aralik: 1, duman: 3, tutukluk: 0.01, yagmur: 1.2, delme: 2, model: "top", ses: "cannon", misket: true,
+    aciklama: "Krupp tipi çelik top. Daha uzağa, daha isabetli."},
+  seri_top: {ad: "Seri atışlı sahra topu", tur: "top", yil: 1897, menzil: 1400, isabet: 0.62, hasar: 150, alan: 7, dolum: 4, sarjor: 1, aralik: 1, duman: 0.8, tutukluk: 0.005, yagmur: 1, delme: 2, model: "top", ses: "cannon",
+    aciklama: "Geri tepme frenli; dakikada 15 atış. Dumansız barut."},
+  obus: {ad: "Obüs", tur: "top", yil: 1880, menzil: 1300, isabet: 0.45, hasar: 200, alan: 9, dolum: 18, sarjor: 1, aralik: 1, duman: 2.5, tutukluk: 0.01, yagmur: 1, delme: 2, model: "obus", ses: "cannon", egik: true,
+    aciklama: "Yüksek açıyla atar: tepe ve siper arkasını vurur."},
+  havan: {ad: "Siper havanı", tur: "top", yil: 1915, menzil: 450, isabet: 0.45, hasar: 120, alan: 7, dolum: 6, sarjor: 1, aralik: 1, duman: 1.2, tutukluk: 0.01, yagmur: 1, delme: 1, model: "havan", ses: "thump", egik: true,
+    aciklama: "Taşınabilir, dik açılı atış. Siperlerin kâbusu."},
+  tank_topu: {ad: "Tank topu", tur: "top", yil: 1916, menzil: 500, isabet: 0.4, hasar: 140, alan: 5, dolum: 6, sarjor: 1, aralik: 1, duman: 1, tutukluk: 0.02, yagmur: 1, delme: 2, model: "", ses: "cannon",
+    aciklama: "Tankın yan çıkıntısındaki kısa namlulu top."},
+  ucaksavar: {ad: "Uçaksavar topu", tur: "top", yil: 1915, menzil: 900, isabet: 0.3, hasar: 120, alan: 6, dolum: 4, sarjor: 1, aralik: 1, duman: 0.6, tutukluk: 0.01, yagmur: 1, delme: 1, model: "top", ses: "cannon", havaya: true,
+    aciklama: "Balon ve uçaklara karşı."},
+};
+
+export const silah = id => SILAHLAR[id] || SILAHLAR.agizdan_tufek;
